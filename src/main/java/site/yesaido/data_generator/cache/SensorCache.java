@@ -2,12 +2,14 @@ package site.yesaido.data_generator.cache;
 
 import org.springframework.stereotype.Service;
 import site.yesaido.data_generator.domain.SensorCacheEntry;
+import site.yesaido.data_generator.exception.SensorCacheException;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 /***
@@ -22,10 +24,11 @@ import java.util.concurrent.atomic.AtomicReference;
 public class SensorCache {
     //AtomicReference 로 감싸줌으로써 thread-safe
     private final AtomicReference<Map<String, SensorCacheEntry>> sensorEntriesReference = new AtomicReference<>(Map.of());
+    private final AtomicBoolean initialSynchronizationCompleted = new AtomicBoolean(false);
 
     public void upsert(SensorCacheEntry sensorCacheEntry) {
         if (sensorCacheEntry == null) {
-            throw new IllegalArgumentException("sensorCacheEntry는 null일 수 없습니다.");
+            throw new SensorCacheException("sensorCacheEntry는 null일 수 없습니다.");
         }
         // updateAndGet()은 AtomicReference의 현재 값을 기반으로 새 값을 계산하고, 그 값을 원자적으로 교체한 뒤 새 값을 반환하는 메서드.
         sensorEntriesReference.updateAndGet(currentSensorEntries -> {
@@ -62,24 +65,30 @@ public class SensorCache {
 
     public void replaceAll(Collection<SensorCacheEntry> sensorCacheEntries) {
         if (sensorCacheEntries == null) {
-            throw new IllegalArgumentException("sensorCacheEntries는 null일 수 없습니다.");
+            throw new SensorCacheException("sensorCacheEntries는 null일 수 없습니다.");
         }
 
         Map<String, SensorCacheEntry> replacementSensorEntries = new HashMap<>();
 
         for (SensorCacheEntry sensorCacheEntry : sensorCacheEntries) {
             if (sensorCacheEntry == null) {
-                throw new IllegalArgumentException("sensorCacheEntries에 null이 포함될 수 없습니다.");
+                throw new SensorCacheException("sensorCacheEntries에 null이 포함될 수 없습니다.");
             }
 
             SensorCacheEntry previousSensorCacheEntry = replacementSensorEntries.put(sensorCacheEntry.deviceEui(), sensorCacheEntry);
 
             if (previousSensorCacheEntry != null) {
-                throw new IllegalArgumentException("중복된 deviceEui입니다: " + sensorCacheEntry.deviceEui());
+                throw new SensorCacheException("중복된 deviceEui입니다: " + sensorCacheEntry.deviceEui());
             }
         }
 
         sensorEntriesReference.set(Map.copyOf(replacementSensorEntries));
+
+        initialSynchronizationCompleted.set(true);
+    }
+
+    public boolean isInitialSynchronizationCompleted() {
+        return initialSynchronizationCompleted.get();
     }
 
     public Optional<SensorCacheEntry> findByDeviceEui(String deviceEui) {
@@ -98,7 +107,7 @@ public class SensorCache {
 
     private static void validateDeviceEui(String deviceEui) {
         if (deviceEui == null || deviceEui.isBlank()) {
-            throw new IllegalArgumentException("deviceEui는 null이거나 공백일 수 없습니다.");
+            throw new SensorCacheException("deviceEui는 null이거나 공백일 수 없습니다.");
         }
     }
 }
