@@ -9,17 +9,4 @@ permissions:
 
 jobs:
   test-and-coverage:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-
-      - uses: actions/setup-java@v4
-        with:
-          java-version: "21"
-          distribution: temurin
-          cache: maven
-
-      - name: Test and JaCoCo 40% coverage check
-        run: ./mvnw -B clean verify
+    uses: ./.github/workflows/_reusable-test.yml
