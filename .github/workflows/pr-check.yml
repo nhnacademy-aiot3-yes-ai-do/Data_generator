@@ -5,7 +5,7 @@ on:
     branches: [ develop, main ]
 
 jobs:
-  dependency-check:
+  build-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -15,14 +15,7 @@ jobs:
           distribution: 'temurin'
       - name: dependency:tree 출력 (충돌 확인용)
         run: mvn -B dependency:tree
-
-  build-test:
-    uses: ./.github/workflows/_reusable-test.yml
-
-  docker-build-test:
-    needs: build-test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+      - name: Test and coverage check
+        run: ./mvnw -B clean verify
       - name: Docker 이미지 빌드 테스트 (push는 안 함)
-        run: docker build -t user-server:pr-test .
+        run: docker build -t pr-check:${{ github.sha }} .
