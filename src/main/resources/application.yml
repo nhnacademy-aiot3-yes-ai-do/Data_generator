@@ -21,3 +21,10 @@ generator:
     worker-pool-size: ${GENERATOR_WORKER_POOL_SIZE:4}
     queue-capacity: ${GENERATOR_WORKER_QUEUE_CAPACITY:200}
     await-termination-seconds: ${GENERATOR_WORKER_AWAIT_TERMINATION_SECONDS:10}
+
+sensor:
+  synchronization:
+    max-attempts: ${SENSOR_SYNCHRONIZATION_MAX_ATTEMPTS:5}
+    initial-backoff-milliseconds: ${SENSOR_SYNCHRONIZATION_INITIAL_BACKOFF_MILLISECONDS:1000}
+    backoff-multiplier: ${SENSOR_SYNCHRONIZATION_BACKOFF_MULTIPLIER:2.0}
+    maximum-backoff-milliseconds: ${SENSOR_SYNCHRONIZATION_MAXIMUM_BACKOFF_MILLISECONDS:30000}
