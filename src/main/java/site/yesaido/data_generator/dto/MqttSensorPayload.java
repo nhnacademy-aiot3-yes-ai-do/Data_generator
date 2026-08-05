@@ -5,6 +5,25 @@ import site.yesaido.data_generator.exception.InvalidMqttPayloadException;
 
 import java.time.Instant;
 
+/**
+ * 측정값 + SensorCacheEntry
+ *         ↓
+ * MqttSensorPayload 생성
+ *         ↓
+ * JSON 직렬화
+ *         ↓
+ * byte[] 반환
+ *         ↓
+ * MQTT 메시지로 발행
+ */
+
+/**
+ *
+ * @param value
+ * @param time
+ * @param deviceName
+ * @param deviceEui
+ */
 public record MqttSensorPayload (
     @JsonProperty("value")
     Number value,
