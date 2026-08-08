@@ -13,15 +13,15 @@ public record MeasurementConfiguration(
             Map.of(MeasurementType.TEMPERATURE , new MeasurementConfiguration(
                     16.0,
                     10.0,
-                    20.0,
+                    30.0,
                     0.3,
                             1
             ),
                     MeasurementType.HUMIDITY,
                     new MeasurementConfiguration(
                             80.0,
-                            60.0,
-                            100.0,
+                            40.0,
+                            120.0,
                             1.0,
                             1
                     ),

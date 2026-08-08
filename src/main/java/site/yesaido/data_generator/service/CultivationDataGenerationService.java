@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import site.yesaido.data_generator.cache.SensorCache;
+import site.yesaido.data_generator.domain.ActuatorType;
 import site.yesaido.data_generator.domain.MeasurementType;
 import site.yesaido.data_generator.domain.SensorCacheEntry;
 import site.yesaido.data_generator.exception.SensorDataGenerationException;
@@ -14,6 +15,7 @@ import site.yesaido.data_generator.mqtt.MqttPublishable;
 import site.yesaido.data_generator.mqtt.MqttTopicGenerator;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletionStage;
 
 @Slf4j
@@ -26,13 +28,16 @@ public class CultivationDataGenerationService {
     private final MqttPayloadSerializer mqttPayloadSerializer;
     private final MqttPublishable mqttPublishable;
     private final RandomWalkGenerator randomWalkGenerator;
+    private final VirtualActuatorService virtualActuatorService;
 
     public void generateAndPublishSensorData(long cultivationId, List<SensorCacheEntry> sensorCacheEntries) {
         validateGenerationRequest(cultivationId,sensorCacheEntries);
 
         try{
+            Set<ActuatorType> activeActuatorTypes = virtualActuatorService.getActiveActuatorTypesSnapshot(cultivationId);
+
             for(SensorCacheEntry sensorCacheEntry : sensorCacheEntries){
-                generateAndPublishSensorMeasurements(cultivationId,sensorCacheEntry);
+                generateAndPublishSensorMeasurements(cultivationId,sensorCacheEntry,activeActuatorTypes);
             }
         } finally {
             removeDeletedSensorStates(sensorCacheEntries);
@@ -40,19 +45,21 @@ public class CultivationDataGenerationService {
 
     }
 
-    private void generateAndPublishSensorMeasurements(long cultivationId, SensorCacheEntry sensorCacheEntry) {
+    private void generateAndPublishSensorMeasurements(long cultivationId, SensorCacheEntry sensorCacheEntry, Set<ActuatorType> activeActuatorTypes) {
         for(MeasurementType measurementType : sensorCacheEntry.measurementTypes()){
             if(!isCurrentSensorEntry(sensorCacheEntry)) {
                 return;
             }
 
-            generateAndPublishMeasurement(cultivationId,sensorCacheEntry,measurementType);
+            generateAndPublishMeasurement(cultivationId,sensorCacheEntry,measurementType, activeActuatorTypes);
         }
     }
 
-    private void generateAndPublishMeasurement(long cultivationId, SensorCacheEntry sensorCacheEntry, MeasurementType measurementType) {
+    private void generateAndPublishMeasurement(long cultivationId, SensorCacheEntry sensorCacheEntry,
+                                               MeasurementType measurementType, Set<ActuatorType> activeActuatorTypes) {
         try {
-            Number value = randomWalkGenerator.generateNextValue(sensorCacheEntry.deviceEui(), measurementType);
+            double actuatorEffectAmount = calculateActuatorEffectAmount(activeActuatorTypes,measurementType);
+            Number value = randomWalkGenerator.generateNextValue(sensorCacheEntry.deviceEui(), measurementType, actuatorEffectAmount);
             String topic = mqttTopicGenerator.generateTopic(sensorCacheEntry, measurementType);
             byte[] payload = mqttPayloadSerializer.serializePayload(value, sensorCacheEntry);
 
@@ -66,6 +73,13 @@ public class CultivationDataGenerationService {
         }catch ( RuntimeException exception){
             log.error("센서 데이터 생성 또는 발행 요청 실패. cultivationId={}, deviceEui={}, measurementType={}",cultivationId,sensorCacheEntry.deviceEui(),measurementType, exception);
         }
+    }
+
+    private static double calculateActuatorEffectAmount(Set<ActuatorType> activeActuatorTypes, MeasurementType measurementType) {
+        return activeActuatorTypes.stream()
+                .filter(actuatorType -> actuatorType.getMeasurementType() == measurementType)
+                .mapToDouble(ActuatorType::getEffectAmount)
+                .sum();
     }
 
 
@@ -85,7 +99,7 @@ public class CultivationDataGenerationService {
         }
     }
 
-    private void validateGenerationRequest(long cultivationId, List<SensorCacheEntry> sensorCacheEntries) {
+    private static void validateGenerationRequest(long cultivationId, List<SensorCacheEntry> sensorCacheEntries) {
         if(cultivationId <= 0 ) {
             throw new SensorDataGenerationException("cultivationId는 0보다 커야 합니다.");
         }

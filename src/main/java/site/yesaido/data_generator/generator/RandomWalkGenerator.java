@@ -2,6 +2,7 @@ package site.yesaido.data_generator.generator;
 
 import site.yesaido.data_generator.domain.MeasurementConfiguration;
 import site.yesaido.data_generator.domain.MeasurementType;
+import site.yesaido.data_generator.exception.SensorDataGenerationException;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,16 +23,16 @@ public class RandomWalkGenerator {
 
     public RandomWalkGenerator(RandomGenerator randomGenerator,Map<MeasurementType, MeasurementConfiguration> measurementConfigurations){
         if( randomGenerator == null){
-            throw new IllegalArgumentException("randomGenerator는 null일 수 없습니다.");
+            throw new SensorDataGenerationException("randomGenerator는 null일 수 없습니다.");
         }
 
         if( measurementConfigurations == null){
-            throw new IllegalArgumentException("measurementConfigurations는 null일 수 없습니다.");
+            throw new SensorDataGenerationException("measurementConfigurations는 null일 수 없습니다.");
         }
 
         for( MeasurementType measurementType : MeasurementType.values()){
             if(measurementConfigurations.get(measurementType) == null){
-                throw new IllegalArgumentException("측정값 설정이 없습니다: " + measurementType);
+                throw new SensorDataGenerationException("측정값 설정이 없습니다: " + measurementType);
             }
         }
 
@@ -40,16 +41,21 @@ public class RandomWalkGenerator {
 
     }
 
-    public Number generateNextValue(String deviceEui, MeasurementType measurementType){
+    public Number generateNextValue(String deviceEui, MeasurementType measurementType) {
+        return generateNextValue(deviceEui, measurementType, 0.0);
+    }
+
+    public Number generateNextValue(String deviceEui, MeasurementType measurementType, double actuatorEffectAmount){
         validateDeviceEui(deviceEui);
-        if( measurementType == null) {
-            throw new IllegalArgumentException("measurementType은 null일 수 없습니다.");
-        }
+        validateMeasurementType(measurementType);
+        validateActuatorEffectAmount(actuatorEffectAmount);
 
         MeasurementConfiguration measurementConfiguration = measurementConfigurations.get(measurementType);
         MeasurementStateKey measurementStateKey = new MeasurementStateKey(deviceEui, measurementType);
 
-        double generatedValue  = previousValues.compute(measurementStateKey,(stateKey, previousValue) -> calculateNextValue(previousValue, measurementConfiguration));
+        double generatedValue  = previousValues.compute(measurementStateKey,(
+                stateKey, previousValue) -> calculateNextValue(
+                        previousValue, measurementConfiguration, actuatorEffectAmount));
 
         if( measurementConfiguration.decimalPlaces() == 0){
             return Math.round(generatedValue);
@@ -66,14 +72,14 @@ public class RandomWalkGenerator {
                 measurementStateKey -> deviceEui.equals(measurementStateKey.deviceEui()));
     }
 
-    private double calculateNextValue(Double previousValue, MeasurementConfiguration measurementConfiguration) {
+    private double calculateNextValue(Double previousValue, MeasurementConfiguration measurementConfiguration, double actuatorEffectAmount) {
         double candidateValue;
 
         if( previousValue == null ){
-            candidateValue = measurementConfiguration.initialValue();
+            candidateValue = measurementConfiguration.initialValue() + actuatorEffectAmount;
         }else {
-            double changeAmount = randomGenerator.nextDouble(-measurementConfiguration.maximumChange(), measurementConfiguration.maximumChange());
-            candidateValue = previousValue + changeAmount;
+            double randomChangeAmount = randomGenerator.nextDouble(-measurementConfiguration.maximumChange(), measurementConfiguration.maximumChange());
+            candidateValue = previousValue + randomChangeAmount + actuatorEffectAmount;
         }
 
         double boundedValue = clampValue(candidateValue, measurementConfiguration.minimumValue(), measurementConfiguration.maximumValue());
@@ -83,19 +89,32 @@ public class RandomWalkGenerator {
 
     }
 
-    private double clampValue(double value, double minimumValue, double maximumValue) {
+    private static double clampValue(double value, double minimumValue, double maximumValue) {
         return Math.clamp(value, minimumValue, maximumValue);
     }
 
 
-    private double roundValue(double value, int decimalPlaces){
+    private static double roundValue(double value, int decimalPlaces){
         double scale = Math.pow(10, decimalPlaces);
         return Math.round(value * scale) / scale;
     }
 
-    private void validateDeviceEui(String deviceEui){
+    private static void validateActuatorEffectAmount(double actuatorEffectAmount) {
+        if (!Double.isFinite(actuatorEffectAmount)) {
+            throw new SensorDataGenerationException("actuatorEffectAmount는 유한한 숫자여야 합니다.");
+        }
+    }
+
+    private static void validateMeasurementType(MeasurementType measurementType) {
+        if (measurementType == null) {
+            throw new SensorDataGenerationException("measurementType은 null일 수 없습니다.");
+        }
+
+    }
+
+    private static void validateDeviceEui(String deviceEui){
         if( deviceEui == null || deviceEui.isBlank()){
-            throw new IllegalArgumentException("deviceEui는 null이거나 공백일 수 없습니다.");
+            throw new SensorDataGenerationException("deviceEui는 null이거나 공백일 수 없습니다.");
         }
     }
 
