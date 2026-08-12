@@ -2,7 +2,6 @@ package site.yesaido.data_generator.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import site.yesaido.data_generator.exception.InvalidMqttPayloadException;
-import site.yesaido.data_generator.exception.InvalidMqttTopicException;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -51,7 +50,7 @@ public record MqttSensorPayload (
 
 public MqttSensorPayload {
     if(value == null) {
-        throw new InvalidMqttTopicException("value는 null일 수 없습니다.");
+        throw new InvalidMqttPayloadException("value는 null일 수 없습니다.");
     }
 
     if (isNonFinite(value)) {
