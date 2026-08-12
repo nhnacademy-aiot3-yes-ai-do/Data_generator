@@ -2,13 +2,11 @@ package site.yesaido.data_generator.cache;
 
 import org.springframework.stereotype.Service;
 import site.yesaido.data_generator.domain.SensorCacheEntry;
+import site.yesaido.data_generator.domain.SensorChannelKey;
+import site.yesaido.data_generator.domain.SensorTypeSpec;
 import site.yesaido.data_generator.exception.SensorCacheException;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -20,49 +18,106 @@ import java.util.concurrent.atomic.AtomicReference;
  * 5. 다시 불변 Map으로 만듦
  * 6. AtomicReference가 현재 Map을 교체
  */
+/*
+ * 센서 캐시는 불변 Map을 AtomicReference로 교체하여
+ * 읽는 쪽에서 항상 완성된 센서 정보를 조회할 수 있게 합니다.
+ */
 @Service
 public class SensorCache {
-    //AtomicReference 로 감싸줌으로써 thread-safe
+
     private final AtomicReference<Map<String, SensorCacheEntry>> sensorEntriesReference = new AtomicReference<>(Map.of());
+
     private final AtomicBoolean initialSynchronizationCompleted = new AtomicBoolean(false);
 
+    // 장치 메타데이터는 갱신하고 기존 채널과 신규 채널은 합집합으로 병합
     public void upsert(SensorCacheEntry sensorCacheEntry) {
         if (sensorCacheEntry == null) {
             throw new SensorCacheException("sensorCacheEntry는 null일 수 없습니다.");
         }
-        // updateAndGet()은 AtomicReference의 현재 값을 기반으로 새 값을 계산하고, 그 값을 원자적으로 교체한 뒤 새 값을 반환하는 메서드.
-        sensorEntriesReference.updateAndGet(currentSensorEntries -> {
-            SensorCacheEntry currentSensorCacheEntry =
-                    currentSensorEntries.get(sensorCacheEntry.deviceEui());
 
-            if (sensorCacheEntry.equals(currentSensorCacheEntry)) {
+        sensorEntriesReference.updateAndGet(currentSensorEntries -> {
+            SensorCacheEntry currentSensorCacheEntry = currentSensorEntries.get(sensorCacheEntry.deviceEui());
+
+            if (currentSensorCacheEntry == null) {
+                Map<String, SensorCacheEntry> updatedSensorEntries = new HashMap<>(currentSensorEntries);
+                updatedSensorEntries.put(sensorCacheEntry.deviceEui(), sensorCacheEntry);
+                return Map.copyOf(updatedSensorEntries);
+            }
+            validateSameCultivation(currentSensorCacheEntry, sensorCacheEntry);
+
+            SensorCacheEntry mergedSensorCacheEntry = mergeSensorCacheEntries(currentSensorCacheEntry, sensorCacheEntry);
+
+            if (mergedSensorCacheEntry.equals(currentSensorCacheEntry)) {
                 return currentSensorEntries;
             }
 
             Map<String, SensorCacheEntry> updatedSensorEntries = new HashMap<>(currentSensorEntries);
 
-            updatedSensorEntries.put(sensorCacheEntry.deviceEui(), sensorCacheEntry);
+            updatedSensorEntries.put(mergedSensorCacheEntry.deviceEui(), mergedSensorCacheEntry);
 
             return Map.copyOf(updatedSensorEntries);
         });
     }
 
+    // 정확한 deviceEui, sensorType, unit 채널 하나만 삭제
+    public void removeChannel(SensorChannelKey sensorChannelKey) {
+        if (sensorChannelKey == null) {
+            throw new SensorCacheException("sensorChannelKey는 null일 수 없습니다.");
+        }
+
+        String normalizedDeviceEui = normalizeDeviceEui(sensorChannelKey.deviceEui());
+
+        sensorEntriesReference.updateAndGet(currentSensorEntries -> {
+            SensorCacheEntry currentSensorCacheEntry = currentSensorEntries.get(normalizedDeviceEui);
+
+            if (currentSensorCacheEntry == null) {
+                return currentSensorEntries;
+            }
+
+            Set<SensorTypeSpec> remainingSensorTypes = new HashSet<>(currentSensorCacheEntry.sensorTypes());
+
+            boolean channelRemoved = remainingSensorTypes.removeIf(
+                    sensorTypeSpec ->
+                            sensorTypeSpec.sensorType().equals(sensorChannelKey.sensorType())
+                                    && sensorTypeSpec.unit().equals(sensorChannelKey.unit())
+            );
+
+            if (!channelRemoved) {
+                return currentSensorEntries;
+            }
+
+            Map<String, SensorCacheEntry> updatedSensorEntries = new HashMap<>(currentSensorEntries);
+
+            if (remainingSensorTypes.isEmpty()) {
+                updatedSensorEntries.remove(normalizedDeviceEui);
+            } else {
+                SensorCacheEntry updatedSensorCacheEntry = copyWithSensorTypes(currentSensorCacheEntry, remainingSensorTypes);
+
+                updatedSensorEntries.put(normalizedDeviceEui, updatedSensorCacheEntry);
+            }
+
+            return Map.copyOf(updatedSensorEntries);
+        });
+    }
+
+    // 장치와 장치에 속한 모든 채널을 함께 삭제
     public void removeByDeviceEui(String deviceEui) {
-        validateDeviceEui(deviceEui);
+        String normalizedDeviceEui = normalizeDeviceEui(deviceEui);
 
         sensorEntriesReference.updateAndGet(currentSensorEntries -> {
-            if (!currentSensorEntries.containsKey(deviceEui)) {
+            if (!currentSensorEntries.containsKey(normalizedDeviceEui)) {
                 return currentSensorEntries;
             }
 
             Map<String, SensorCacheEntry> updatedSensorEntries = new HashMap<>(currentSensorEntries);
 
-            updatedSensorEntries.remove(deviceEui);
+            updatedSensorEntries.remove(normalizedDeviceEui);
 
             return Map.copyOf(updatedSensorEntries);
         });
     }
 
+    // Feign으로 조회한 전체 센서 목록을 한 번에 교체
     public void replaceAll(Collection<SensorCacheEntry> sensorCacheEntries) {
         if (sensorCacheEntries == null) {
             throw new SensorCacheException("sensorCacheEntries는 null일 수 없습니다.");
@@ -75,7 +130,7 @@ public class SensorCache {
                 throw new SensorCacheException("sensorCacheEntries에 null이 포함될 수 없습니다.");
             }
 
-            SensorCacheEntry previousSensorCacheEntry = replacementSensorEntries.put(sensorCacheEntry.deviceEui(), sensorCacheEntry);
+            SensorCacheEntry previousSensorCacheEntry = replacementSensorEntries.putIfAbsent(sensorCacheEntry.deviceEui(), sensorCacheEntry);
 
             if (previousSensorCacheEntry != null) {
                 throw new SensorCacheException("중복된 deviceEui입니다: " + sensorCacheEntry.deviceEui());
@@ -92,9 +147,9 @@ public class SensorCache {
     }
 
     public Optional<SensorCacheEntry> findByDeviceEui(String deviceEui) {
-        validateDeviceEui(deviceEui);
+        String normalizedDeviceEui = normalizeDeviceEui(deviceEui);
 
-        return Optional.ofNullable(sensorEntriesReference.get().get(deviceEui));
+        return Optional.ofNullable(sensorEntriesReference.get().get(normalizedDeviceEui));
     }
 
     public List<SensorCacheEntry> getSnapshot() {
@@ -105,9 +160,61 @@ public class SensorCache {
         return sensorEntriesReference.get().size();
     }
 
-    private static void validateDeviceEui(String deviceEui) {
+    private static SensorCacheEntry mergeSensorCacheEntries(
+            SensorCacheEntry currentSensorCacheEntry,
+            SensorCacheEntry newSensorCacheEntry
+    ) {
+        Set<SensorTypeSpec> mergedSensorTypes = new HashSet<>(currentSensorCacheEntry.sensorTypes());
+
+        mergedSensorTypes.addAll(newSensorCacheEntry.sensorTypes());
+
+        // 공통 장치 정보는 가장 최근 Upsert로 전달된 값을 사용
+        return new SensorCacheEntry(
+                newSensorCacheEntry.cultivationId(),
+                newSensorCacheEntry.deviceEui(),
+                newSensorCacheEntry.deviceName(),
+                newSensorCacheEntry.location(),
+                newSensorCacheEntry.locationDetail(),
+                newSensorCacheEntry.deviceModel(),
+                mergedSensorTypes
+        );
+    }
+
+    private static SensorCacheEntry copyWithSensorTypes(
+            SensorCacheEntry sensorCacheEntry,
+            Set<SensorTypeSpec> sensorTypes
+    ) {
+        return new SensorCacheEntry(
+                sensorCacheEntry.cultivationId(),
+                sensorCacheEntry.deviceEui(),
+                sensorCacheEntry.deviceName(),
+                sensorCacheEntry.location(),
+                sensorCacheEntry.locationDetail(),
+                sensorCacheEntry.deviceModel(),
+                sensorTypes
+        );
+    }
+
+    private static void validateSameCultivation(
+            SensorCacheEntry currentSensorCacheEntry,
+            SensorCacheEntry newSensorCacheEntry
+    ) {
+        if (currentSensorCacheEntry.cultivationId()
+                != newSensorCacheEntry.cultivationId()) {
+            throw new SensorCacheException(
+                    "같은 deviceEui를 다른 cultivation으로 변경할 수 없습니다. " + "deviceEui="
+                            + newSensorCacheEntry.deviceEui() + ", currentCultivationId="
+                            + currentSensorCacheEntry.cultivationId() + ", requestedCultivationId="
+                            + newSensorCacheEntry.cultivationId()
+            );
+        }
+    }
+
+    private static String normalizeDeviceEui(String deviceEui) {
         if (deviceEui == null || deviceEui.isBlank()) {
             throw new SensorCacheException("deviceEui는 null이거나 공백일 수 없습니다.");
         }
+
+        return deviceEui.strip();
     }
 }

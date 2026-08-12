@@ -1,39 +1,41 @@
 package site.yesaido.data_generator.mqtt;
 
 import org.springframework.stereotype.Component;
-import site.yesaido.data_generator.domain.MeasurementType;
 import site.yesaido.data_generator.domain.SensorCacheEntry;
+import site.yesaido.data_generator.domain.SensorTypeSpec;
 import site.yesaido.data_generator.exception.InvalidMqttTopicException;
 
+// 센서 장치의 정확한 타입·단위 채널을 MQTT 토픽으로 생성
 @Component
 public class MqttTopicGenerator {
 
     private static final String ROOT_TOPIC = "mushroom";
     private static final String TOPIC_SEPARATOR = "/";
+    private static final char NULL_CHARACTER = '\0';
 
     public String generateTopic(
             SensorCacheEntry sensorCacheEntry,
-            MeasurementType measurementType
+            SensorTypeSpec sensorTypeSpec
     ){
         if(sensorCacheEntry == null){
             throw new InvalidMqttTopicException("sensorCacheEntry는 null일 수 없습니다.");
         }
 
-        if(measurementType == null){
-            throw new InvalidMqttTopicException("measurementType은 null일 수 없습니다.");
+        if(sensorTypeSpec == null){
+            throw new InvalidMqttTopicException("sensorTypeSpec은 null일 수 없습니다.");
         }
 
-        if(!sensorCacheEntry.measurementTypes().contains(measurementType)){
-            throw new InvalidMqttTopicException("장치가 지원하지 않는 측정 항목입니다. deviceEui=" + sensorCacheEntry.deviceEui() + ", measurementType=" + measurementType);
+        if(!sensorCacheEntry.sensorTypes().contains(sensorTypeSpec)){
+            throw new InvalidMqttTopicException("장치가 지원하지 않는 측정 항목입니다. deviceEui=" + sensorCacheEntry.deviceEui() + ", sensorTypeSpec=" + sensorTypeSpec);
         }
 
-        String measurementTopicValue = measurementType.getTopicValue();
 
         validateTopicComponent(sensorCacheEntry.location(),"location");
         validateTopicComponent(sensorCacheEntry.locationDetail(), "locationDetail");
         validateTopicComponent(sensorCacheEntry.deviceModel(), "deviceModel");
         validateTopicComponent(sensorCacheEntry.deviceEui(),"deviceEui");
-        validateTopicComponent(measurementTopicValue, "measurementType");
+        validateTopicComponent(sensorTypeSpec.sensorType(), "sensorType");
+        validateTopicComponent(sensorTypeSpec.unit(), "unit");
 
         return String.join(
                 TOPIC_SEPARATOR,
@@ -42,20 +44,24 @@ public class MqttTopicGenerator {
                 sensorCacheEntry.locationDetail(),
                 sensorCacheEntry.deviceModel(),
                 sensorCacheEntry.deviceEui(),
-                measurementTopicValue
+                sensorTypeSpec.sensorType(),
+                sensorTypeSpec.unit()
         );
     }
 
 
-    private void validateTopicComponent(String componentValue,String componentName){
+    private static void validateTopicComponent(String componentValue,String componentName){
         if(componentValue == null || componentValue.isBlank()){
-            throw new InvalidMqttTopicException(componentName+ "은 null이거나 공백일 수 없습니다.");
+            throw new InvalidMqttTopicException(componentName+ "은 null이거나 빈 문자열 또는 공백 문자열일 수 없습니다.");
         }
         if(componentValue.contains(TOPIC_SEPARATOR)){
             throw new InvalidMqttTopicException(componentName+ "에는 '/'를 포함할 수 없습니다.");
         }
         if(componentValue.contains("+")|| componentValue.contains("#")){
             throw new InvalidMqttTopicException(componentName+"에는 MQTT 와일드 카드 '+', '#'을 포함할 수 없습니다.");
+        }
+        if (componentValue.indexOf(NULL_CHARACTER) >= 0) {
+            throw new InvalidMqttTopicException(componentName +"에는 null 문자를 포함할 수 없습니다.");
         }
     }
 }
