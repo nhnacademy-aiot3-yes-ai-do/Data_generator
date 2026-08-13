@@ -57,8 +57,8 @@ public class PahoMqttPublisher implements  MqttPublishable, MqttCallbackExtended
         MqttAsyncClient activeClient = mqttClient;
 
         if(activeClient == null || !activeClient.isConnected()){
-            MqttOperationException operationException = new MqttOperationException(
-                    "MQTT client가 연결되지 않았습니다. topic=" + topic);
+            MqttOperationException operationException =
+                    new MqttOperationException("MQTT client가 연결되지 않았습니다. topic=" + topic);
 
             log.error("MQTT 메시지를 발행할 수 없습니다. 연결되지 않은 상태입니다. topic={}",topic);
             return CompletableFuture.failedFuture(operationException);

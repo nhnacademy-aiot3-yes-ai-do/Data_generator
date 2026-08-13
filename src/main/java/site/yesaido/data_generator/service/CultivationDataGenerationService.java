@@ -69,7 +69,7 @@ public class CultivationDataGenerationService {
            Optional<SensorValueGenerator> optionalSensorValueGenerator = sensorValueGeneratorRegistry.findBySensorType(sensorTypeSpec.sensorType());
 
            if(optionalSensorValueGenerator.isEmpty()) {
-               log.debug("등록된 센서값 생성기가 없어 MQTT 발행을 건너뜁니다. " + "cultivationId={}, deviceEui={}, sensorType={}, unit={}",
+               log.debug("등록된 센서값 생성기가 없어 MQTT 발행을 건너뜁니다. cultivationId={}, deviceEui={}, sensorType={}, unit={}",
                        cultivationId, sensorCacheEntry.deviceEui(), sensorTypeSpec.sensorType(), sensorTypeSpec.unit());
                return;
            }
@@ -99,12 +99,8 @@ public class CultivationDataGenerationService {
            publishResult.whenComplete((ignoredResult, exception) -> {
                        if (exception != null) {
                            log.error(
-                                   "MQTT 비동기 발행 실패. "
-                                           + "cultivationId={}, deviceEui={}, sensorType={}, unit={}",
-                                   cultivationId,
-                                   sensorCacheEntry.deviceEui(),
-                                   sensorTypeSpec.sensorType(),
-                                   sensorTypeSpec.unit(),
+                                   "MQTT 비동기 발행 실패. cultivationId={}, deviceEui={}, sensorType={}, unit={}",
+                                   cultivationId, sensorCacheEntry.deviceEui(), sensorTypeSpec.sensorType(), sensorTypeSpec.unit(),
                                    exception
                            );
                        }

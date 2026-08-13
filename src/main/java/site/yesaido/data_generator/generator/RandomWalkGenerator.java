@@ -104,7 +104,7 @@ public class RandomWalkGenerator {
         if (previousValue == null) {
             candidateValue = measurementConfiguration.initialValue() + actuatorEffectAmount;
         } else {
-            double randomChangeAmount = randomGenerator.nextDouble(-measurementConfiguration.maximumChange(), measurementConfiguration.maximumChange());
+            double randomChangeAmount = generateRandomChangeAmount(measurementConfiguration);
             candidateValue = previousValue + randomChangeAmount + actuatorEffectAmount;
         }
 
@@ -112,6 +112,16 @@ public class RandomWalkGenerator {
         double roundedValue = roundValue(boundedValue, measurementConfiguration.decimalPlaces());
 
         return clampValue(roundedValue, measurementConfiguration.minimumValue(), measurementConfiguration.maximumValue());
+    }
+
+    // 최대 변화량이 0인 고정값 설정에서는 난수 생성기를 호출하지 않음
+    private double generateRandomChangeAmount(MeasurementConfiguration measurementConfiguration) {
+        double maximumChange = measurementConfiguration.maximumChange();
+        if(maximumChange == 0.0) {
+            return 0.0;
+        }
+
+        return randomGenerator.nextDouble(-maximumChange, maximumChange);
     }
 
     private static Number convertGeneratedValue(double generatedValue, MeasurementConfiguration measurementConfiguration) {
