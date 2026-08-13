@@ -22,6 +22,11 @@ generator:
     queue-capacity: ${GENERATOR_WORKER_QUEUE_CAPACITY:200}
     await-termination-seconds: ${GENERATOR_WORKER_AWAIT_TERMINATION_SECONDS:10}
 
+  dynamic-sensor:
+    range-expansion-ratio: ${GENERATOR_DYNAMIC_SENSOR_RANGE_EXPANSION_RATIO:0.10}
+    maximum-change-ratio: ${GENERATOR_DYNAMIC_SENSOR_MAXIMUM_CHANGE_RATIO:0.02}
+    decimal-places: ${GENERATOR_DYNAMIC_SENSOR_DECIMAL_PLACES:2}
+
 sensor:
   synchronization:
     max-attempts: ${SENSOR_SYNCHRONIZATION_MAX_ATTEMPTS:5}

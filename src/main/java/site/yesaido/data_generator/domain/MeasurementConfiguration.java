@@ -6,7 +6,12 @@ public record MeasurementConfiguration(
         double initialValue,
         double minimumValue,
         double maximumValue,
+        /*
+         * 0보다 크면 Random Walk의 무작위 변화량으로 사용하고,
+         * 0이면 무작위 변화 없이 고정값을 유지합니다.
+         */
         double maximumChange,
+
         int decimalPlaces // 소숫점 몇 자리 까지 사용할지
 ) {
     private static final Map<MeasurementType, MeasurementConfiguration> DEFAULT_CONFIGURATIONS =
@@ -57,8 +62,8 @@ public record MeasurementConfiguration(
             throw new IllegalArgumentException("initialValue는 최솟값과 최댓값 사이여야 합니다.");
         }
 
-        if (maximumChange <= 0) {
-            throw new IllegalArgumentException("maximumChange는 0보다 커야 합니다.");
+        if (maximumChange < 0) {
+            throw new IllegalArgumentException("maximumChange는 0 이상이어야 합니다.");
         }
 
         if (decimalPlaces < 0) {
