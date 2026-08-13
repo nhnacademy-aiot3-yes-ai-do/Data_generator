@@ -5,12 +5,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import site.yesaido.data_generator.cache.SensorCache;
-import site.yesaido.data_generator.converter.SensorUnitConverter;
 import site.yesaido.data_generator.domain.*;
 import site.yesaido.data_generator.exception.SensorDataGenerationException;
-import site.yesaido.data_generator.generator.RandomWalkGenerator;
-import site.yesaido.data_generator.generator.SensorValueGenerator;
-import site.yesaido.data_generator.generator.SensorValueGeneratorRegistry;
+import site.yesaido.data_generator.generator.SensorValueGenerationResolver;
 import site.yesaido.data_generator.mqtt.MqttPayloadSerializer;
 import site.yesaido.data_generator.mqtt.MqttPublishable;
 import site.yesaido.data_generator.mqtt.MqttTopicGenerator;
@@ -32,10 +29,9 @@ public class CultivationDataGenerationService {
     private final MqttPayloadSerializer mqttPayloadSerializer;
     private final MqttPublishable mqttPublishable;
 
-    private final RandomWalkGenerator randomWalkGenerator;
+
     private final VirtualActuatorService virtualActuatorService;
-    private final SensorValueGeneratorRegistry sensorValueGeneratorRegistry;
-    private final SensorUnitConverter sensorUnitConverter;
+    private final SensorValueGenerationResolver sensorValueGenerationResolver;
 
     public void generateAndPublishSensorData(long cultivationId, List<SensorCacheEntry> sensorCacheEntries) {
         validateGenerationRequest(cultivationId,sensorCacheEntries);
@@ -44,15 +40,15 @@ public class CultivationDataGenerationService {
             Set<ActuatorType> activeActuatorTypes = virtualActuatorService.getActiveActuatorTypesSnapshot(cultivationId);
 
             for(SensorCacheEntry sensorCacheEntry : sensorCacheEntries){
-                generateAndPublishSensorMeasurements(cultivationId,sensorCacheEntry,activeActuatorTypes);
+                generateAndPublishSensorChannels(cultivationId,sensorCacheEntry,activeActuatorTypes);
             }
         } finally {
-            removeDeletedSensorStates(sensorCacheEntries);
+            removeDeletedSensorChannelStates(sensorCacheEntries);
         }
 
     }
 
-    private void generateAndPublishSensorMeasurements(long cultivationId, SensorCacheEntry sensorCacheEntry, Set<ActuatorType> activeActuatorTypes) {
+    private void generateAndPublishSensorChannels(long cultivationId, SensorCacheEntry sensorCacheEntry, Set<ActuatorType> activeActuatorTypes) {
         for(SensorTypeSpec sensorTypeSpec : sensorCacheEntry.sensorTypes()){
             if(!isCurrentSensorEntry(sensorCacheEntry)) {
                 return;
@@ -66,34 +62,21 @@ public class CultivationDataGenerationService {
                                                SensorTypeSpec sensorTypeSpec, Set<ActuatorType> activeActuatorTypes) {
        try {
            SensorChannelKey sensorChannelKey = new SensorChannelKey(sensorCacheEntry.deviceEui(), sensorTypeSpec.sensorType(),  sensorTypeSpec.unit());
-           Optional<SensorValueGenerator> optionalSensorValueGenerator = sensorValueGeneratorRegistry.findBySensorType(sensorTypeSpec.sensorType());
-
-           if(optionalSensorValueGenerator.isEmpty()) {
-               log.debug("등록된 센서값 생성기가 없어 MQTT 발행을 건너뜁니다. cultivationId={}, deviceEui={}, sensorType={}, unit={}",
-                       cultivationId, sensorCacheEntry.deviceEui(), sensorTypeSpec.sensorType(), sensorTypeSpec.unit());
-               return;
-           }
-
            double actuatorEffectAmount = calculateActuatorEffectAmount(activeActuatorTypes, sensorTypeSpec.sensorType());
-           Number canonicalValue = optionalSensorValueGenerator.get().generateNextValue(sensorChannelKey,actuatorEffectAmount);
-           Optional<Number> optionalConvertedValue = sensorUnitConverter.convertFromCanonical(sensorTypeSpec.sensorType(), sensorTypeSpec.unit(), canonicalValue);
+           Optional<Number> optionalGeneratedValue = sensorValueGenerationResolver.generateNextValue(cultivationId,sensorChannelKey, actuatorEffectAmount);
 
-           if (optionalConvertedValue.isEmpty()) {
+           if (optionalGeneratedValue.isEmpty()) {
                log.debug(
-                       "지원하지 않는 센서 타입·단위 조합이므로 MQTT 발행을 건너뜁니다. "
-                               + "cultivationId={}, deviceEui={}, sensorType={}, unit={}",
-                       cultivationId,
-                       sensorCacheEntry.deviceEui(),
-                       sensorTypeSpec.sensorType(),
-                       sensorTypeSpec.unit()
+                       "센서값을 생성할 수 있는 생성기·단위 또는 임계값 설정이 없어 MQTT 발행을 건너뜁니다. cultivationId={}, deviceEui={}, sensorType={}, unit={}",
+                       cultivationId, sensorCacheEntry.deviceEui(), sensorTypeSpec.sensorType(), sensorTypeSpec.unit()
                );
                return;
            }
 
-           Number convertedValue = optionalConvertedValue.get();
+           Number generatedValue = optionalGeneratedValue.get();
 
            String topic = mqttTopicGenerator.generateTopic(sensorCacheEntry,sensorTypeSpec);
-           byte[] payload = mqttPayloadSerializer.serializePayload(convertedValue,sensorTypeSpec,sensorCacheEntry);
+           byte[] payload = mqttPayloadSerializer.serializePayload(generatedValue,sensorTypeSpec,sensorCacheEntry);
            CompletionStage<Void> publishResult = mqttPublishable.publishMessage(topic,payload);
 
            publishResult.whenComplete((ignoredResult, exception) -> {
@@ -126,12 +109,24 @@ public class CultivationDataGenerationService {
                 .isPresent();
     }
 
-    private void removeDeletedSensorStates(List<SensorCacheEntry> sensorCacheEntries){
-        for( SensorCacheEntry sensorCacheEntry : sensorCacheEntries) {
-            boolean sensorDeleted = sensorCache.findByDeviceEui(sensorCacheEntry.deviceEui()).isEmpty();
+    private void removeDeletedSensorChannelStates(List<SensorCacheEntry> sensorCacheEntries) {
+        for (SensorCacheEntry snapshotEntry : sensorCacheEntries) {
+            Set<SensorTypeSpec> currentSensorTypes =
+                    sensorCache.findByDeviceEui(snapshotEntry.deviceEui())
+                            .map(SensorCacheEntry::sensorTypes)
+                            .orElse(Set.of());
 
-            if(sensorDeleted){
-                randomWalkGenerator.removeStatesByDeviceEui(sensorCacheEntry.deviceEui());
+            for (SensorTypeSpec snapshotSensorType : snapshotEntry.sensorTypes()) {
+                if (currentSensorTypes.contains(snapshotSensorType)) {
+                    continue;
+                }
+
+                SensorChannelKey deletedSensorChannelKey = new SensorChannelKey(
+                        snapshotEntry.deviceEui(), snapshotSensorType.sensorType(), snapshotSensorType.unit());
+
+                sensorValueGenerationResolver.removeState(
+                        deletedSensorChannelKey
+                );
             }
         }
     }

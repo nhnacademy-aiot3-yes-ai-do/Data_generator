@@ -8,6 +8,6 @@ import java.util.List;
 
 @FeignClient(name = "cultivation-server")
 public interface CultivationSensorReadable {
-    @GetMapping("/api/v1/cultivations/sensors")
+    @GetMapping("/api//cultivations/sensors")
     List<CultivationSensorResponse> getCultivationSensors();
 }

@@ -23,7 +23,7 @@ generator:
     await-termination-seconds: ${GENERATOR_WORKER_AWAIT_TERMINATION_SECONDS:10}
 
   dynamic-sensor:
-    range-expansion-ratio: ${GENERATOR_DYNAMIC_SENSOR_RANGE_EXPANSION_RATIO:0.10}
+    range-expansion-ratio: ${GENERATOR_DYNAMIC_SENSOR_RANGE_EXPANSION_RATIO:0.20}
     maximum-change-ratio: ${GENERATOR_DYNAMIC_SENSOR_MAXIMUM_CHANGE_RATIO:0.02}
     decimal-places: ${GENERATOR_DYNAMIC_SENSOR_DECIMAL_PLACES:2}
 

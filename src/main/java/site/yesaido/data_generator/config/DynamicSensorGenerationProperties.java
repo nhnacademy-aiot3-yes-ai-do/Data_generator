@@ -24,7 +24,7 @@ public class DynamicSensorGenerationProperties {
     @NotNull
     @DecimalMin("0.0")
     @DecimalMax("1.0")
-    private BigDecimal rangeExpansionRatio = new BigDecimal("0.10");
+    private BigDecimal rangeExpansionRatio = new BigDecimal("0.20"); // 임계값 범위 폭의 20%씩 하한·상한 양쪽으로 확장
 
     @NotNull
     @DecimalMin(
@@ -32,7 +32,7 @@ public class DynamicSensorGenerationProperties {
             inclusive = false
     )
     @DecimalMax("1.0")
-    private BigDecimal maximumChangeRatio = new BigDecimal("0.02");
+    private BigDecimal maximumChangeRatio = new BigDecimal("0.02"); // 초당 임계값 폭의 2% 씩 변화
 
     @Min(0)
     private int decimalPlaces = 2;
