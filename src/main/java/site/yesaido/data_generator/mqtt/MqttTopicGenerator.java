@@ -5,7 +5,7 @@ import site.yesaido.data_generator.domain.SensorCacheEntry;
 import site.yesaido.data_generator.domain.SensorTypeSpec;
 import site.yesaido.data_generator.exception.InvalidMqttTopicException;
 
-// 센서 장치의 정확한 타입·단위 채널을 MQTT 토픽으로 생성
+// 센서 장치와 sensorType을 식별하는 MQTT 토픽을 생성
 @Component
 public class MqttTopicGenerator {
 
@@ -35,7 +35,6 @@ public class MqttTopicGenerator {
         validateTopicComponent(sensorCacheEntry.deviceModel(), "deviceModel");
         validateTopicComponent(sensorCacheEntry.deviceEui(),"deviceEui");
         validateTopicComponent(sensorTypeSpec.sensorType(), "sensorType");
-        validateTopicComponent(sensorTypeSpec.unit(), "unit");
 
         return String.join(
                 TOPIC_SEPARATOR,
@@ -44,8 +43,7 @@ public class MqttTopicGenerator {
                 sensorCacheEntry.locationDetail(),
                 sensorCacheEntry.deviceModel(),
                 sensorCacheEntry.deviceEui(),
-                sensorTypeSpec.sensorType(),
-                sensorTypeSpec.unit()
+                sensorTypeSpec.sensorType()
         );
     }
 
