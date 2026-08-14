@@ -2,6 +2,13 @@ spring:
   application:
     name: data_generator
 
+    # Cultivation Server가 센서·임계값 이벤트를 발행하는 RabbitMQ 접속 정보
+  rabbitmq:
+    host: ${RABBITMQ_HOST}
+    port: ${RABBITMQ_PORT}
+    username: ${RABBITMQ_USERNAME}
+    password: ${RABBITMQ_PASSWORD}
+
 mqtt:
   broker-url: "${MQTT_BROKER_URL}"
   client-id: "${MQTT_CLIENT_ID}"

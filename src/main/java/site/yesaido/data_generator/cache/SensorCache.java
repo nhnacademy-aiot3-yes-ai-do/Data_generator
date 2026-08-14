@@ -117,6 +117,31 @@ public class SensorCache {
         });
     }
 
+    // 재배 종료 시 해당 cultivation의 모든 센서 장치를 한 번에 제거합니다.
+    public List<SensorCacheEntry> removeByCultivationId(long cultivationId) {
+        validateCultivationId(cultivationId);
+
+        Map<String, SensorCacheEntry> previousSensorEntries =
+                sensorEntriesReference.getAndUpdate(currentSensorEntries -> {
+                            Map<String, SensorCacheEntry> updatedSensorEntries = new HashMap<>(currentSensorEntries);
+
+                            boolean sensorRemoved = updatedSensorEntries.entrySet()
+                                    .removeIf(sensorEntry -> sensorEntry
+                                            .getValue().cultivationId() == cultivationId);
+
+                            if (!sensorRemoved) {
+                                return currentSensorEntries;
+                            }
+
+                            return Map.copyOf(updatedSensorEntries);
+                        }
+                );
+
+        return previousSensorEntries.values().stream()
+                .filter(sensorCacheEntry -> sensorCacheEntry.cultivationId() == cultivationId)
+                .toList();
+    }
+
     // Feign으로 조회한 전체 센서 목록을 한 번에 교체
     public void replaceAll(Collection<SensorCacheEntry> sensorCacheEntries) {
         if (sensorCacheEntries == null) {
@@ -193,6 +218,12 @@ public class SensorCache {
                 sensorCacheEntry.deviceModel(),
                 sensorTypes
         );
+    }
+
+    private static void validateCultivationId(long cultivationId) {
+        if (cultivationId <= 0) {
+            throw new SensorCacheException("cultivationId는 0보다 커야 합니다.");
+        }
     }
 
     private static void validateSameCultivation(
