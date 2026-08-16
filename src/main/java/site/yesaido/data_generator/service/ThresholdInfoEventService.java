@@ -30,17 +30,14 @@ public class ThresholdInfoEventService {
     private final SensorValueGenerationResolver sensorValueGenerationResolver;
     private final VirtualActuatorService virtualActuatorService;
 
-    private static final int SINGLE_THRESHOLD_UPDATE_COUNT = 1;
-    private static final int MINIMUM_THRESHOLD_REPLACEMENT_COUNT = 4;
-
-    public void processThresholdEvent(ThresholdInfoEvent thresholdInfoEvent) {
+    public void processThresholdEvent(
+            ThresholdInfoEvent thresholdInfoEvent
+    ) {
         if (thresholdInfoEvent == null) {
             throw new SensorSynchronizationException("thresholdInfoEvent는 null일 수 없습니다.");
         }
 
-        int sensorRangeCount = thresholdInfoEvent.sensorRangeList().size();
-
-        if (sensorRangeCount == 0) {
+        if (thresholdInfoEvent.sensorRangeList().isEmpty()) {
             stopCultivationGeneration(thresholdInfoEvent.cultivationId());
 
             log.info("빈 임계값 이벤트를 반영하여 cultivation 생성을 중단했습니다. cultivationId={}, occurredAt={}",
@@ -48,22 +45,12 @@ public class ThresholdInfoEventService {
             return;
         }
 
-        validateSensorRangeCount(thresholdInfoEvent.cultivationId(), sensorRangeCount);
+        Map<SensorThresholdKey, SensorThresholdRange> thresholdEntries = convertToThresholdEntries(thresholdInfoEvent);
 
-        Map<SensorThresholdKey, SensorThresholdRange> thresholdEntries =
-                convertToThresholdEntries(thresholdInfoEvent);
+        sensorThresholdCache.upsertAll(thresholdEntries);
 
-        if (sensorRangeCount == SINGLE_THRESHOLD_UPDATE_COUNT) {
-            sensorThresholdCache.upsertAll(thresholdEntries);
-
-            log.info("단건 임계값 수정 이벤트를 반영했습니다. cultivationId={}, thresholdCount={}, occurredAt={}",
-                    thresholdInfoEvent.cultivationId(), thresholdEntries.size(), thresholdInfoEvent.occurredAt());
-            return;
-        }
-
-        sensorThresholdCache.replaceByCultivationId(thresholdInfoEvent.cultivationId(), thresholdEntries);
-
-        log.info("cultivation 임계값 등록 이벤트를 전체 교체 방식으로 반영했습니다. cultivationId={}, thresholdCount={}, occurredAt={}",
+        log.info(
+                "임계값 Upsert 이벤트를 반영했습니다. cultivationId={}, thresholdCount={}, occurredAt={}",
                 thresholdInfoEvent.cultivationId(), thresholdEntries.size(), thresholdInfoEvent.occurredAt());
     }
 
@@ -113,15 +100,4 @@ public class ThresholdInfoEventService {
         return Map.copyOf(thresholdEntries);
     }
 
-    private static void validateSensorRangeCount(long cultivationId, int sensorRangeCount) {
-        if (sensorRangeCount == SINGLE_THRESHOLD_UPDATE_COUNT || sensorRangeCount >= MINIMUM_THRESHOLD_REPLACEMENT_COUNT) {
-            return;
-        }
-
-        throw new SensorSynchronizationException(
-                "threshold.crud 이벤트의 sensorRangeList 크기는 0, 1 또는 4 이상이어야 합니다. cultivationId=%d, sensorRangeCount=%d"
-                        .formatted(cultivationId, sensorRangeCount)
-                        .strip()
-        );
-    }
 }
