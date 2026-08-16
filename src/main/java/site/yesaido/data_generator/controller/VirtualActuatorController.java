@@ -12,7 +12,7 @@ import site.yesaido.data_generator.service.VirtualActuatorService;
 
 @RestController
 @RequestMapping(
-        "/internal/v1/cultivations/{cultivationId}/actuators"
+        "/internal/cultivations/{cultivationId}/actuators"
 )
 @RequiredArgsConstructor
 public class VirtualActuatorController {

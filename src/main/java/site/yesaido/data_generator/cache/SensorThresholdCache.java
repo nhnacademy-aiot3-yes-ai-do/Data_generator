@@ -60,33 +60,6 @@ public class SensorThresholdCache {
         });
     }
 
-    // 한 cultivation의 기존 임계값을 새로운 임계값 목록으로 원자적으로 교체합니다.
-    public void replaceByCultivationId(long cultivationId, Map<SensorThresholdKey, SensorThresholdRange> thresholdEntries) {
-        validateCultivationId(cultivationId);
-
-        Map<SensorThresholdKey, SensorThresholdRange> replacementThresholdEntries = copyAndValidateThresholdEntries(thresholdEntries);
-
-        if (replacementThresholdEntries.isEmpty()) {
-            throw new SensorDataGenerationException("교체할 thresholdEntries는 비어 있을 수 없습니다.");
-        }
-
-        validateThresholdCultivationIds(cultivationId, replacementThresholdEntries);
-
-        thresholdEntriesReference.updateAndGet(currentThresholdEntries -> {
-            Map<SensorThresholdKey, SensorThresholdRange> updatedThresholdEntries = new HashMap<>(currentThresholdEntries);
-
-            updatedThresholdEntries.keySet()
-                    .removeIf(thresholdKey -> thresholdKey.cultivationId() == cultivationId);
-
-            updatedThresholdEntries.putAll(replacementThresholdEntries);
-
-            if (updatedThresholdEntries.equals(currentThresholdEntries)) {
-                return currentThresholdEntries;
-            }
-
-            return Map.copyOf(updatedThresholdEntries);
-        });
-    }
 
     public void remove(SensorThresholdKey thresholdKey) {
         validateThresholdKey(thresholdKey);
@@ -176,18 +149,6 @@ public class SensorThresholdCache {
     private static void validateCultivationId(long cultivationId) {
         if(cultivationId <= 0) {
             throw new SensorDataGenerationException("cultivationId는 0보다 커야 합니다.");
-        }
-    }
-
-    private static void validateThresholdCultivationIds(long cultivationId, Map<SensorThresholdKey, SensorThresholdRange> thresholdEntries) {
-        for (SensorThresholdKey thresholdKey : thresholdEntries.keySet()) {
-            if (thresholdKey.cultivationId() != cultivationId) {
-                throw new SensorDataGenerationException(
-                        "교체할 임계값 키의 cultivationId가 요청값과 일치하지 않습니다. requestedCultivationId=%d, thresholdCultivationId=%d"
-                                .formatted(cultivationId, thresholdKey.cultivationId())
-                                .strip()
-                );
-            }
         }
     }
 

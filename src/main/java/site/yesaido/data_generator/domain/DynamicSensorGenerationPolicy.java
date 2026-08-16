@@ -30,6 +30,10 @@ public record DynamicSensorGenerationPolicy(
             throw new SensorDataGenerationException("decimalPlaces는 0보다 작을 수 없습니다.");
         }
 
+        if (decimalPlaces > MeasurementConfiguration.MAX_DECIMAL_PLACES) {
+            throw new SensorDataGenerationException("decimalPlaces는 "
+                    + MeasurementConfiguration.MAX_DECIMAL_PLACES + " 이하여야 합니다.");
+        }
         rangeExpansionRatio = rangeExpansionRatio.stripTrailingZeros();
         maximumChangeRatio = maximumChangeRatio.stripTrailingZeros();
     }

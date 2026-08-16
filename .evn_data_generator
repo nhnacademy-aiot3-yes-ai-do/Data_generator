@@ -1,2 +1,0 @@
-MQTT_BROKER_URL='tcp://localhost:1883'
-MQTT_CLIENT_ID='mushmush-data-generator'

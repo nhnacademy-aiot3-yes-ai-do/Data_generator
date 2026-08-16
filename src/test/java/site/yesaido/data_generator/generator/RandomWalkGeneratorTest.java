@@ -199,4 +199,93 @@ class RandomWalkGeneratorTest {
                 2
         );
     }
+
+    @Test
+    @DisplayName("양수와 음수의 절반값을 HALF_UP 규칙으로 반올림한다")
+    void roundHalfValueUsingHalfUp() {
+        SensorChannelKey positiveChannelKey = new SensorChannelKey(
+                "device-positive",
+                "CUSTOM_SENSOR",
+                "unit"
+        );
+
+        SensorChannelKey negativeChannelKey = new SensorChannelKey(
+                "device-negative",
+                "CUSTOM_SENSOR",
+                "unit"
+        );
+
+        MeasurementConfiguration positiveConfiguration = new MeasurementConfiguration(
+                1.25,
+                -10.0,
+                10.0,
+                0.0,
+                1
+        );
+
+        MeasurementConfiguration negativeConfiguration =
+                new MeasurementConfiguration(
+                        -1.25,
+                        -10.0,
+                        10.0,
+                        0.0,
+                        1
+                );
+
+        Number positiveValue = randomWalkGenerator.generateNextValue(
+                positiveChannelKey, positiveConfiguration, 0.0);
+
+        Number negativeValue = randomWalkGenerator.generateNextValue(
+                negativeChannelKey, negativeConfiguration, 0.0);
+
+        assertThat(positiveValue.doubleValue()).isEqualTo(1.3);
+        assertThat(negativeValue.doubleValue()).isEqualTo(-1.3);
+
+        verifyNoInteractions(randomGenerator);
+    }
+
+    @Test
+    @DisplayName("Double 최댓값을 반올림해도 다른 값으로 변경되지 않는다")
+    void preserveLargeFiniteValueWhenRounding() {
+        SensorChannelKey sensorChannelKey = new SensorChannelKey(
+                "device-large-value",
+                "CUSTOM_SENSOR",
+                "unit"
+        );
+
+        MeasurementConfiguration measurementConfiguration = new MeasurementConfiguration(
+                Double.MAX_VALUE,
+                0.0,
+                Double.MAX_VALUE,
+                0.0,
+                1
+        );
+
+        Number generatedValue = randomWalkGenerator.generateNextValue(
+                sensorChannelKey, measurementConfiguration, 0.0);
+
+        assertThat(generatedValue.doubleValue())
+                .isFinite()
+                .isEqualTo(Double.MAX_VALUE);
+
+        verifyNoInteractions(randomGenerator);
+    }
+
+    @Test
+    @DisplayName("지원하는 최대 정밀도를 초과하면 설정 생성을 거절한다")
+    void rejectDecimalPlacesAboveMaximum() {
+        assertThatThrownBy(() -> new MeasurementConfiguration(
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                MeasurementConfiguration.MAX_DECIMAL_PLACES + 1)
+        )
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("decimalPlaces는 "
+                        + MeasurementConfiguration.MAX_DECIMAL_PLACES + " 이하여야 합니다."
+                );
+
+        verifyNoInteractions(randomGenerator);
+    }
 }
