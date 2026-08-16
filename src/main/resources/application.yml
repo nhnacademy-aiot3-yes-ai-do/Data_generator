@@ -1,6 +1,8 @@
 spring:
   application:
     name: data_generator
+  config:
+    import: optional:file:.env[.properties]
 
 mqtt:
   broker-url: "${MQTT_BROKER_URL}"

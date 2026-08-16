@@ -13,6 +13,22 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
+      - uses: ./.github/actions/setup-test-env
+      - name: Start Mosquitto for tests
+        run: |
+          mkdir -p /tmp/mosquitto
+          cat > /tmp/mosquitto/mosquitto.conf <<'EOF'
+          listener 1883
+          allow_anonymous true
+          EOF
+          docker run -d --name mosquitto-ci \
+            -p 1883:1883 \
+            -v /tmp/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf \
+            eclipse-mosquitto:2
+          for i in $(seq 1 10); do
+            nc -z localhost 1883 && break
+            sleep 1
+          done
       - name: dependency:tree 출력 (충돌 확인용)
         run: mvn -B dependency:tree
       - name: Test and coverage check
