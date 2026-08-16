@@ -15,6 +15,9 @@ public record MeasurementConfiguration(
         int decimalPlaces
 ) {
 
+    // double 기반 생성기가 지원하는 최대 소수점 자릿수입니다.
+    public static final int MAX_DECIMAL_PLACES = 15;
+
     public MeasurementConfiguration {
         validateFinite(initialValue, "initialValue");
         validateFinite(minimumValue, "minimumValue");
@@ -35,6 +38,10 @@ public record MeasurementConfiguration(
 
         if (decimalPlaces < 0) {
             throw new IllegalArgumentException("decimalPlaces는 0보다 작을 수 없습니다.");
+        }
+
+        if (decimalPlaces > MAX_DECIMAL_PLACES) {
+            throw new IllegalArgumentException("decimalPlaces는 " + MAX_DECIMAL_PLACES + " 이하여야 합니다.");
         }
     }
 

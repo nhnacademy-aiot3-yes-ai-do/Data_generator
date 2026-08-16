@@ -4,6 +4,8 @@ import site.yesaido.data_generator.domain.MeasurementConfiguration;
 import site.yesaido.data_generator.domain.SensorChannelKey;
 import site.yesaido.data_generator.exception.SensorDataGenerationException;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.random.RandomGenerator;
@@ -100,9 +102,9 @@ public class RandomWalkGenerator {
     }
 
     private static double roundValue(double value, int decimalPlaces) {
-        double scale = Math.pow(10, decimalPlaces);
-
-        return Math.round(value * scale) / scale;
+        return BigDecimal.valueOf(value)
+                .setScale(decimalPlaces, RoundingMode.HALF_UP)
+                .doubleValue();
     }
 
     private static void validateSensorChannelKey(SensorChannelKey sensorChannelKey) {

@@ -394,16 +394,6 @@ local 프로필에서는 RabbitMQ Listener를 시작하지 않습니다. MQTT Br
 docker build -t data-generator .
 ```
 
-local 프로필 실행:
-
-```bash
-docker run --rm \
-  --env-file .env \
-  -e SPRING_PROFILES_ACTIVE=local \
-  -p 8080:8080 \
-  data-generator
-```
-
 ## 현재 제약사항
 
 - Data Generator는 thread-safe 인메모리 캐시를 사용하므로 현재 replica는 `1`로 운영합니다.

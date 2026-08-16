@@ -1,15 +1,13 @@
 package site.yesaido.data_generator.config;
 
 
-import jakarta.validation.constraints.DecimalMax;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
+import site.yesaido.data_generator.domain.MeasurementConfiguration;
 
 import java.math.BigDecimal;
 
@@ -35,5 +33,6 @@ public class DynamicSensorGenerationProperties {
     private BigDecimal maximumChangeRatio = new BigDecimal("0.02"); // 초당 임계값 폭의 2% 씩 변화
 
     @Min(0)
+    @Max(MeasurementConfiguration.MAX_DECIMAL_PLACES)
     private int decimalPlaces = 2;
 }
