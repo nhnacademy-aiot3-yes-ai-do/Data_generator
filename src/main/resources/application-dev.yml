@@ -35,3 +35,6 @@ sensor:
     initial-backoff-milliseconds: ${SENSOR_SYNCHRONIZATION_INITIAL_BACKOFF_MILLISECONDS:1000}
     backoff-multiplier: ${SENSOR_SYNCHRONIZATION_BACKOFF_MULTIPLIER:2.0}
     maximum-backoff-milliseconds: ${SENSOR_SYNCHRONIZATION_MAXIMUM_BACKOFF_MILLISECONDS:30000}
+
+server:
+  port: 9003
