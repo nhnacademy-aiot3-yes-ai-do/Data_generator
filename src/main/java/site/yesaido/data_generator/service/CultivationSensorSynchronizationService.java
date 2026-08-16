@@ -98,7 +98,10 @@ public class CultivationSensorSynchronizationService { // 초기 센서/임계�
             SensorThresholdKey key = new SensorThresholdKey(threshold.cultivationId(), threshold.sensorType(), threshold.unit());
             SensorThresholdRange range = new SensorThresholdRange(threshold.minValue(), threshold.maxValue());
 
-            thresholdEntries.put(key, range);
+            SensorThresholdRange previous = thresholdEntries.putIfAbsent(key, range);
+            if (previous != null) {
+                throw new SensorSynchronizationException("snapshot의 thresholds에 중복된 임계값 키가 포함되어 있습니다: " + key);
+            }
         }
 
         return thresholdEntries;
