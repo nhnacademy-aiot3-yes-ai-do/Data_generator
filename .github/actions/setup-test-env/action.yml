@@ -1,5 +1,5 @@
 name: Setup test env
-description: CI 테스트용 MQTT 환경변수 설정
+description: CI 테스트용 MQTT 및 RabbitMQ 환경변수 설정
 runs:
   using: composite
   steps:
@@ -11,3 +11,7 @@ runs:
         echo "MQTT_PASSWORD=" >> "$GITHUB_ENV"
         echo "MQTT_QOS=0" >> "$GITHUB_ENV"
         echo "MQTT_RETAINED=false" >> "$GITHUB_ENV"
+        echo "RABBITMQ_HOST=localhost" >> "$GITHUB_ENV"
+        echo "RABBITMQ_PORT=5672" >> "$GITHUB_ENV"
+        echo "RABBITMQ_USERNAME=guest" >> "$GITHUB_ENV"
+        echo "RABBITMQ_PASSWORD=guest" >> "$GITHUB_ENV"
