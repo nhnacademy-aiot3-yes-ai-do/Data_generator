@@ -1,11 +1,9 @@
 package site.yesaido.data_generator.generator;
 
 import site.yesaido.data_generator.domain.MeasurementConfiguration;
-import site.yesaido.data_generator.domain.MeasurementType;
 import site.yesaido.data_generator.domain.SensorChannelKey;
 import site.yesaido.data_generator.exception.SensorDataGenerationException;
 
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.random.RandomGenerator;
@@ -13,92 +11,53 @@ import java.util.random.RandomGenerator;
 public class RandomWalkGenerator {
 
     private final RandomGenerator randomGenerator;
-    private final Map<MeasurementType, MeasurementConfiguration> measurementConfigurations;
 
-    // 기존 MeasurementType 기반 생성 흐름에서 사용하는 상태 저장소
-    private final ConcurrentMap<MeasurementStateKey, Double> previousValues = new ConcurrentHashMap<>();
-
-    // String sensorType과 unit을 포함한 독립 채널별 상태 저장소
+    // deviceEui, sensorType, unit 조합별 Random Walk 상태를 저장합니다.
     private final ConcurrentMap<SensorChannelKey, Double> sensorChannelPreviousValues = new ConcurrentHashMap<>();
 
     public RandomWalkGenerator(RandomGenerator randomGenerator) {
-        this(randomGenerator, MeasurementConfiguration.getDefaultConfigurations());
-    }
-
-    public RandomWalkGenerator(RandomGenerator randomGenerator, Map<MeasurementType, MeasurementConfiguration> measurementConfigurations) {
         if (randomGenerator == null) {
             throw new SensorDataGenerationException("randomGenerator는 null일 수 없습니다.");
         }
 
-        if (measurementConfigurations == null) {
-            throw new SensorDataGenerationException("measurementConfigurations는 null일 수 없습니다.");
-        }
-
-        for (MeasurementType measurementType : MeasurementType.values()) {
-            if (measurementConfigurations.get(measurementType) == null) {
-                throw new SensorDataGenerationException("측정값 설정이 없습니다: " + measurementType);
-            }
-        }
-
         this.randomGenerator = randomGenerator;
-        this.measurementConfigurations = Map.copyOf(measurementConfigurations);
     }
 
-    public Number generateNextValue(String deviceEui, MeasurementType measurementType) {
-        return generateNextValue(deviceEui, measurementType, 0.0);
-    }
-
-    public Number generateNextValue(String deviceEui, MeasurementType measurementType, double actuatorEffectAmount) {
-        validateDeviceEui(deviceEui);
-        validateMeasurementType(measurementType);
-        validateActuatorEffectAmount(actuatorEffectAmount);
-
-        MeasurementConfiguration measurementConfiguration = measurementConfigurations.get(measurementType);
-
-        MeasurementStateKey measurementStateKey = new MeasurementStateKey(deviceEui, measurementType);
-
-        double generatedValue = previousValues.compute(measurementStateKey,
-                (stateKey, previousValue) -> calculateNextValue(
-                        previousValue, measurementConfiguration, actuatorEffectAmount)
-        );
-
-        return convertGeneratedValue(generatedValue, measurementConfiguration);
-    }
-
-    // String 기반 생성기가 정확한 센서 채널의 다음 값을 생성할 때 사용하는 API
     public Number generateNextValue(SensorChannelKey sensorChannelKey,
-                                    MeasurementConfiguration measurementConfiguration,
-                                    double actuatorEffectAmount) {
+            MeasurementConfiguration measurementConfiguration,
+            double actuatorEffectAmount
+    ) {
         validateSensorChannelKey(sensorChannelKey);
         validateMeasurementConfiguration(measurementConfiguration);
         validateActuatorEffectAmount(actuatorEffectAmount);
 
         double generatedValue = sensorChannelPreviousValues.compute(
-                sensorChannelKey, (stateKey, previousValue)
-                        -> calculateNextValue(previousValue, measurementConfiguration, actuatorEffectAmount)
-        );
+                sensorChannelKey, (stateKey, previousValue) ->
+                        calculateNextValue(previousValue, measurementConfiguration, actuatorEffectAmount)
+                );
 
         return convertGeneratedValue(generatedValue, measurementConfiguration);
     }
 
-    // 지정한 센서 채널 하나의 Random Walk 상태만 제거
+    // 지정한 센서 채널 하나의 Random Walk 상태만 제거합니다.
     public void removeState(SensorChannelKey sensorChannelKey) {
         validateSensorChannelKey(sensorChannelKey);
 
         sensorChannelPreviousValues.remove(sensorChannelKey);
     }
 
+    // 지정한 장치에 속한 모든 센서 채널 상태를 제거합니다.
     public void removeStatesByDeviceEui(String deviceEui) {
         validateDeviceEui(deviceEui);
 
-        previousValues.keySet().removeIf(
-                measurementStateKey -> deviceEui.equals(measurementStateKey.deviceEui()));
-
-        sensorChannelPreviousValues.keySet().removeIf(
-                sensorChannelKey -> deviceEui.equals(sensorChannelKey.deviceEui()));
+        sensorChannelPreviousValues.keySet().removeIf(sensorChannelKey
+                -> deviceEui.equals(sensorChannelKey.deviceEui()));
     }
 
-    private double calculateNextValue(Double previousValue, MeasurementConfiguration measurementConfiguration, double actuatorEffectAmount) {
+    private double calculateNextValue(Double previousValue,
+            MeasurementConfiguration measurementConfiguration,
+            double actuatorEffectAmount
+    ) {
         double candidateValue;
 
         if (previousValue == null) {
@@ -114,17 +73,21 @@ public class RandomWalkGenerator {
         return clampValue(roundedValue, measurementConfiguration.minimumValue(), measurementConfiguration.maximumValue());
     }
 
-    // 최대 변화량이 0인 고정값 설정에서는 난수 생성기를 호출하지 않음
+    // 최대 변화량이 0이면 RandomGenerator를 호출하지 않습니다.
     private double generateRandomChangeAmount(MeasurementConfiguration measurementConfiguration) {
         double maximumChange = measurementConfiguration.maximumChange();
-        if(maximumChange == 0.0) {
+
+        if (maximumChange == 0.0) {
             return 0.0;
         }
 
         return randomGenerator.nextDouble(-maximumChange, maximumChange);
     }
 
-    private static Number convertGeneratedValue(double generatedValue, MeasurementConfiguration measurementConfiguration) {
+    private static Number convertGeneratedValue(
+            double generatedValue,
+            MeasurementConfiguration measurementConfiguration
+    ) {
         if (measurementConfiguration.decimalPlaces() == 0) {
             return Math.round(generatedValue);
         }
@@ -160,15 +123,13 @@ public class RandomWalkGenerator {
         }
     }
 
-    private static void validateMeasurementType(MeasurementType measurementType) {
-        if (measurementType == null) {
-            throw new SensorDataGenerationException("measurementType은 null일 수 없습니다.");
-        }
-    }
-
-    private static void validateDeviceEui(String deviceEui) {
+    private static void validateDeviceEui(
+            String deviceEui
+    ) {
         if (deviceEui == null || deviceEui.isBlank()) {
-            throw new SensorDataGenerationException("deviceEui는 null이거나 공백일 수 없습니다.");
+            throw new SensorDataGenerationException(
+                    "deviceEui는 null이거나 공백일 수 없습니다."
+            );
         }
     }
 }
