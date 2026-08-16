@@ -1,5 +1,5 @@
 name: Setup test env
-description: CI 테스트용 DB/JWT 환경변수 설정
+description: CI 테스트용 MQTT 환경변수 설정
 runs:
   using: composite
   steps:
@@ -10,9 +10,4 @@ runs:
         echo "MQTT_USERNAME=" >> "$GITHUB_ENV"
         echo "MQTT_PASSWORD=" >> "$GITHUB_ENV"
         echo "MQTT_QOS=0" >> "$GITHUB_ENV"
-        echo "MQTT_RETAINED=5432" >> "$GITHUB_ENV"
-        echo "MQTT_RETAINED=5432" >> "$GITHUB_ENV"
-        echo "MQTT_RETAINED=5432" >> "$GITHUB_ENV"
-        echo "MQTT_RETAINED=5432" >> "$GITHUB_ENV"
-        
-        
+        echo "MQTT_RETAINED=false" >> "$GITHUB_ENV"
