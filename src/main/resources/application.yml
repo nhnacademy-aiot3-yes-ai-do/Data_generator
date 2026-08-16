@@ -1,6 +1,8 @@
 spring:
   application:
     name: data_generator
+  config:
+    import: optional:file:.env[.properties]
 
     # Cultivation Server가 센서·임계값 이벤트를 발행하는 RabbitMQ 접속 정보
   rabbitmq:
