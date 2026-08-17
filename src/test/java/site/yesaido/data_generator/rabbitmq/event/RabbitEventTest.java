@@ -220,9 +220,10 @@ class RabbitEventTest {
         ThresholdInfoEvent event = new ThresholdInfoEvent(1L, mutableRanges, OCCURRED_AT);
 
         mutableRanges.clear();
+        List<SensorRange> eventRanges = event.sensorRangeList();
 
-        assertThat(event.sensorRangeList()).containsExactly(range);
-        assertThatThrownBy(() -> event.sensorRangeList().add(range))
+        assertThat(eventRanges).containsExactly(range);
+        assertThatThrownBy(() -> eventRanges.add(range))
                 .isInstanceOf(UnsupportedOperationException.class);
         assertThat(new ThresholdInfoEvent(1L, List.of(), OCCURRED_AT).sensorRangeList()).isEmpty();
     }
@@ -232,21 +233,23 @@ class RabbitEventTest {
     @ValueSource(longs = {0L, -1L})
     @DisplayName("Threshold 이벤트는 유효하지 않은 cultivationId를 거부한다")
     void rejectInvalidThresholdCultivationId(Long cultivationId) {
-        assertThatThrownBy(() -> new ThresholdInfoEvent(cultivationId, List.of(), OCCURRED_AT))
+        List<SensorRange> emptyRanges = List.of();
+
+        assertThatThrownBy(() -> new ThresholdInfoEvent(cultivationId, emptyRanges, OCCURRED_AT))
                 .isInstanceOf(SensorSynchronizationException.class);
     }
 
     @Test
     @DisplayName("Threshold 이벤트는 null 목록, null 요소와 null 발생 시각을 거부한다")
     void rejectInvalidThresholdEventMembers() {
+        List<SensorRange> rangesWithNull = Arrays.asList((SensorRange) null);
+        List<SensorRange> emptyRanges = List.of();
+
         assertThatThrownBy(() -> new ThresholdInfoEvent(1L, null, OCCURRED_AT))
                 .isInstanceOf(SensorSynchronizationException.class);
-        assertThatThrownBy(() -> new ThresholdInfoEvent(
-                1L,
-                Arrays.asList((SensorRange) null),
-                OCCURRED_AT
-        )).isInstanceOf(SensorSynchronizationException.class);
-        assertThatThrownBy(() -> new ThresholdInfoEvent(1L, List.of(), null))
+        assertThatThrownBy(() -> new ThresholdInfoEvent(1L, rangesWithNull, OCCURRED_AT))
+                .isInstanceOf(SensorSynchronizationException.class);
+        assertThatThrownBy(() -> new ThresholdInfoEvent(1L, emptyRanges, null))
                 .isInstanceOf(SensorSynchronizationException.class);
     }
 }

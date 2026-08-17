@@ -26,12 +26,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CultivationTaskCoordinatorTest {
@@ -144,29 +142,33 @@ class CultivationTaskCoordinatorTest {
     @DisplayName("Executor의 일반 실행 예외는 전달하되 예약은 해제한다")
     void rethrowRuntimeExceptionAndReleaseReservation() {
         SensorCacheEntry entry = cacheEntry(1L, "device-A");
+        List<SensorCacheEntry> entries = List.of(entry);
         IllegalStateException failure = new IllegalStateException("executor failure");
         doThrow(failure)
                 .doNothing()
                 .when(taskExecutor)
                 .execute(any(Runnable.class));
 
-        assertThatThrownBy(() -> coordinator.submitGenerationTask(1L, List.of(entry)))
+        assertThatThrownBy(() -> coordinator.submitGenerationTask(1L, entries))
                 .isSameAs(failure);
-        assertThat(coordinator.submitGenerationTask(1L, List.of(entry))).isTrue();
+        assertThat(coordinator.submitGenerationTask(1L, entries)).isTrue();
     }
 
     @Test
     @DisplayName("cultivation 작업 입력의 id, 목록, 요소와 소속을 검증한다")
     void validateTaskArguments() {
         SensorCacheEntry entry = cacheEntry(1L, "device-A");
+        List<SensorCacheEntry> entries = List.of(entry);
+        List<SensorCacheEntry> entriesWithNull =
+                java.util.Arrays.asList((SensorCacheEntry) null);
 
-        assertThatThrownBy(() -> coordinator.submitGenerationTask(0L, List.of(entry)))
+        assertThatThrownBy(() -> coordinator.submitGenerationTask(0L, entries))
                 .isInstanceOf(SensorDataGenerationException.class);
         assertThatThrownBy(() -> coordinator.submitGenerationTask(1L, null))
                 .isInstanceOf(SensorDataGenerationException.class);
-        assertThatThrownBy(() -> coordinator.submitGenerationTask(1L, java.util.Arrays.asList((SensorCacheEntry) null)))
+        assertThatThrownBy(() -> coordinator.submitGenerationTask(1L, entriesWithNull))
                 .isInstanceOf(SensorDataGenerationException.class);
-        assertThatThrownBy(() -> coordinator.submitGenerationTask(2L, List.of(entry)))
+        assertThatThrownBy(() -> coordinator.submitGenerationTask(2L, entries))
                 .isInstanceOf(SensorDataGenerationException.class);
 
         verify(taskExecutor, never()).execute(any(Runnable.class));

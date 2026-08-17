@@ -25,6 +25,7 @@ class DataGeneratorApplicationTests {
 
     @Test
     void contextLoads() {
+        // ApplicationContext가 예외 없이 로드되는 것 자체가 이 테스트의 검증입니다.
     }
 
 }
