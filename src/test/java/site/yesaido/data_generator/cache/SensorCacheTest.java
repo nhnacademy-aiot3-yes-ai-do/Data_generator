@@ -290,9 +290,10 @@ class SensorCacheTest {
         SensorCacheEntry existingEntry = createSensorEntry(1L, "existing-device", "existing-sensor", TEMPERATURE);
         SensorCacheEntry firstDuplicate = createSensorEntry(1L, "duplicate-device", "sensor-1", TEMPERATURE);
         SensorCacheEntry secondDuplicate = createSensorEntry(2L, " duplicate-device ", "sensor-2", HUMIDITY);
+        List<SensorCacheEntry> duplicateEntries = List.of(firstDuplicate, secondDuplicate);
         sensorCache.upsert(existingEntry);
 
-        assertThatThrownBy(() -> sensorCache.replaceAll(List.of(firstDuplicate, secondDuplicate)))
+        assertThatThrownBy(() -> sensorCache.replaceAll(duplicateEntries))
                 .isInstanceOf(SensorCacheException.class)
                 .hasMessage("중복된 deviceEui입니다: duplicate-device");
 
@@ -328,9 +329,10 @@ class SensorCacheTest {
         sensorCache.upsert(sensorEntry);
 
         List<SensorCacheEntry> snapshot = sensorCache.getSnapshot();
+        SensorCacheEntry newEntry = createSensorEntry(2L, "device-2", "sensor-2", HUMIDITY);
 
         assertThat(snapshot).containsExactly(sensorEntry);
-        assertThatThrownBy(() -> snapshot.add(createSensorEntry(2L, "device-2", "sensor-2", HUMIDITY)))
+        assertThatThrownBy(() -> snapshot.add(newEntry))
                 .isInstanceOf(UnsupportedOperationException.class);
     }
 
