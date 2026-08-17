@@ -1,0 +1,44 @@
+spring:
+  application:
+    name: data_generator
+  config:
+    import: optional:file:.env[.properties]
+
+    # Cultivation Server가 센서·임계값 이벤트를 발행하는 RabbitMQ 접속 정보
+  rabbitmq:
+    host: ${RABBITMQ_HOST}
+    port: ${RABBITMQ_PORT}
+    username: ${RABBITMQ_USERNAME}
+    password: ${RABBITMQ_PASSWORD}
+
+mqtt:
+  broker-url: "${MQTT_BROKER_URL}"
+  client-id: "${MQTT_CLIENT_ID}"
+  username: "${MQTT_USERNAME:}" #Mosquitto는 익명 접속을 허용 공란 가능
+  password: "${MQTT_PASSWORD:}"
+  qos: ${MQTT_QOS:0}
+  retained: ${MQTT_RETAINED:false}
+  max-inflight: ${MQTT_MAX_INFLIGHT:100}
+  automatic-reconnect: ${MQTT_AUTOMATIC_RECONNECT:true}
+  connection-timeout-seconds: ${MQTT_CONNECTION_TIMEOUT_SECONDS:10}
+  keep-alive-seconds: ${MQTT_KEEP_ALIVE_SECONDS:30}
+  maximum-reconnect-delay-milliseconds: ${MQTT_MAXIMUM_RECONNECT_DELAY_MILLISECONDS:30000}
+  clean-session: ${MQTT_CLEAN_SESSION:true}
+
+generator:
+  execution:
+    worker-pool-size: ${GENERATOR_WORKER_POOL_SIZE:4}
+    queue-capacity: ${GENERATOR_WORKER_QUEUE_CAPACITY:200}
+    await-termination-seconds: ${GENERATOR_WORKER_AWAIT_TERMINATION_SECONDS:10}
+
+  dynamic-sensor:
+    range-expansion-ratio: ${GENERATOR_DYNAMIC_SENSOR_RANGE_EXPANSION_RATIO:0.20}
+    maximum-change-ratio: ${GENERATOR_DYNAMIC_SENSOR_MAXIMUM_CHANGE_RATIO:0.02}
+    decimal-places: ${GENERATOR_DYNAMIC_SENSOR_DECIMAL_PLACES:2}
+
+sensor:
+  synchronization:
+    max-attempts: ${SENSOR_SYNCHRONIZATION_MAX_ATTEMPTS:5}
+    initial-backoff-milliseconds: ${SENSOR_SYNCHRONIZATION_INITIAL_BACKOFF_MILLISECONDS:1000}
+    backoff-multiplier: ${SENSOR_SYNCHRONIZATION_BACKOFF_MULTIPLIER:2.0}
+    maximum-backoff-milliseconds: ${SENSOR_SYNCHRONIZATION_MAXIMUM_BACKOFF_MILLISECONDS:30000}
