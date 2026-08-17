@@ -6,6 +6,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import site.yesaido.data_generator.exception.SensorCacheException;
 import site.yesaido.data_generator.exception.SensorDataGenerationException;
 
@@ -39,15 +40,16 @@ class SensorDomainValueObjectTest {
         );
 
         mutableSensorTypes.add(new SensorTypeSpec("HUMIDITY", "%RH"));
+        Set<SensorTypeSpec> immutableSensorTypes = entry.sensorTypes();
+        SensorTypeSpec co2 = new SensorTypeSpec("CO2", "ppm");
 
         assertThat(entry.deviceEui()).isEqualTo("device-A");
         assertThat(entry.deviceName()).isEqualTo("TEST-DEVICE");
         assertThat(entry.location()).isEqualTo("mushroom-house");
         assertThat(entry.locationDetail()).isEqualTo("center");
         assertThat(entry.deviceModel()).isEqualTo("TEST123");
-        assertThat(entry.sensorTypes()).containsExactly(TEMPERATURE);
-        assertThatThrownBy(() -> entry.sensorTypes().add(
-                new SensorTypeSpec("CO2", "ppm")))
+        assertThat(immutableSensorTypes).containsExactly(TEMPERATURE);
+        assertThatThrownBy(() -> immutableSensorTypes.add(co2))
                 .isInstanceOf(UnsupportedOperationException.class);
     }
 
@@ -55,9 +57,11 @@ class SensorDomainValueObjectTest {
     @ValueSource(longs = {0L, -1L})
     @DisplayName("센서 캐시 항목의 재배 ID는 양수여야 한다")
     void rejectNonPositiveSensorCacheCultivationId(long cultivationId) {
+        Set<SensorTypeSpec> sensorTypes = Set.of(TEMPERATURE);
+
         assertThatThrownBy(() -> createSensorCacheEntry(
                 cultivationId, "device-A", "TEST-DEVICE", "house",
-                "center", "TEST123", Set.of(TEMPERATURE)))
+                "center", "TEST123", sensorTypes))
                 .isInstanceOf(SensorCacheException.class)
                 .hasMessageContaining("cultivationId");
     }
@@ -83,12 +87,14 @@ class SensorDomainValueObjectTest {
     @Test
     @DisplayName("센서 캐시 항목에는 한 개 이상의 null이 아닌 센서 타입이 필요하다")
     void rejectInvalidSensorTypesInSensorCacheEntry() {
+        Set<SensorTypeSpec> emptySensorTypes = Set.of();
+
         assertThatThrownBy(() -> createSensorCacheEntry(
                 1L, "device-A", "TEST-DEVICE", "house", "center", "TEST123", null))
                 .isInstanceOf(SensorCacheException.class);
 
         assertThatThrownBy(() -> createSensorCacheEntry(
-                1L, "device-A", "TEST-DEVICE", "house", "center", "TEST123", Set.of()))
+                1L, "device-A", "TEST-DEVICE", "house", "center", "TEST123", emptySensorTypes))
                 .isInstanceOf(SensorCacheException.class);
 
         Set<SensorTypeSpec> sensorTypesContainingNull = new HashSet<>();
@@ -118,19 +124,19 @@ class SensorDomainValueObjectTest {
     @MethodSource("invalidSensorTextValueObjects")
     @DisplayName("센서 채널과 타입 명세의 필수 문자열이 없으면 예외가 발생한다")
     void rejectMissingSensorValueObjectText(String objectType, String invalidValue) {
-        assertThatThrownBy(() -> {
-            switch (objectType) {
-                case "channel-device" -> new SensorChannelKey(
-                        invalidValue, "TEMPERATURE", "°C");
-                case "channel-type" -> new SensorChannelKey(
-                        "device-A", invalidValue, "°C");
-                case "channel-unit" -> new SensorChannelKey(
-                        "device-A", "TEMPERATURE", invalidValue);
-                case "spec-type" -> new SensorTypeSpec(invalidValue, "°C");
-                case "spec-unit" -> new SensorTypeSpec("TEMPERATURE", invalidValue);
-                default -> throw new AssertionError("unexpected objectType=" + objectType);
-            }
-        })
+        ThrowingCallable valueObjectCreation = switch (objectType) {
+            case "channel-device" -> () -> new SensorChannelKey(
+                    invalidValue, "TEMPERATURE", "°C");
+            case "channel-type" -> () -> new SensorChannelKey(
+                    "device-A", invalidValue, "°C");
+            case "channel-unit" -> () -> new SensorChannelKey(
+                    "device-A", "TEMPERATURE", invalidValue);
+            case "spec-type" -> () -> new SensorTypeSpec(invalidValue, "°C");
+            case "spec-unit" -> () -> new SensorTypeSpec("TEMPERATURE", invalidValue);
+            default -> throw new AssertionError("unexpected objectType=" + objectType);
+        };
+
+        assertThatThrownBy(valueObjectCreation)
                 .isInstanceOf(SensorDataGenerationException.class);
     }
 
@@ -167,13 +173,11 @@ class SensorDomainValueObjectTest {
     @MethodSource("missingThresholdKeyTexts")
     @DisplayName("센서 임계값 키의 타입과 단위는 필수이다")
     void rejectMissingThresholdKeyText(String fieldName, String invalidValue) {
-        assertThatThrownBy(() -> {
-            if (fieldName.equals("sensorType")) {
-                new SensorThresholdKey(1L, invalidValue, "°C");
-            } else {
-                new SensorThresholdKey(1L, "TEMPERATURE", invalidValue);
-            }
-        })
+        ThrowingCallable thresholdKeyCreation = fieldName.equals("sensorType")
+                ? () -> new SensorThresholdKey(1L, invalidValue, "°C")
+                : () -> new SensorThresholdKey(1L, "TEMPERATURE", invalidValue);
+
+        assertThatThrownBy(thresholdKeyCreation)
                 .isInstanceOf(SensorDataGenerationException.class)
                 .hasMessageContaining(fieldName);
     }

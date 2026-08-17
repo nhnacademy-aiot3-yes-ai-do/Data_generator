@@ -33,11 +33,13 @@ class SensorValueGeneratorRegistryTest {
     @Test
     @DisplayName("생성기 목록이 null 또는 비어 있으면 Registry를 만들 수 없다")
     void rejectNullOrEmptyGeneratorList() {
+        List<SensorValueGenerator> emptyGenerators = List.of();
+
         assertThatThrownBy(() -> new SensorValueGeneratorRegistry(null))
                 .isInstanceOf(SensorDataGenerationException.class)
                 .hasMessageContaining("null");
 
-        assertThatThrownBy(() -> new SensorValueGeneratorRegistry(List.of()))
+        assertThatThrownBy(() -> new SensorValueGeneratorRegistry(emptyGenerators))
                 .isInstanceOf(SensorDataGenerationException.class)
                 .hasMessageContaining("비어");
     }
@@ -45,8 +47,9 @@ class SensorValueGeneratorRegistryTest {
     @Test
     @DisplayName("생성기 목록에 null이 포함되면 Registry를 만들 수 없다")
     void rejectNullGeneratorElement() {
-        assertThatThrownBy(() -> new SensorValueGeneratorRegistry(
-                Collections.singletonList(null)))
+        List<SensorValueGenerator> generatorsWithNull = Collections.singletonList(null);
+
+        assertThatThrownBy(() -> new SensorValueGeneratorRegistry(generatorsWithNull))
                 .isInstanceOf(SensorDataGenerationException.class)
                 .hasMessageContaining("null");
     }
@@ -58,9 +61,9 @@ class SensorValueGeneratorRegistryTest {
     void rejectMissingSupportedSensorType(String supportedSensorType) {
         SensorValueGenerator firstGenerator =
                 new StubSensorValueGenerator(supportedSensorType);
+        List<SensorValueGenerator> generators = List.of(firstGenerator);
 
-        assertThatThrownBy(() -> new SensorValueGeneratorRegistry(
-                List.of(firstGenerator)))
+        assertThatThrownBy(() -> new SensorValueGeneratorRegistry(generators))
                 .isInstanceOf(SensorDataGenerationException.class)
                 .hasMessageContaining("supportedSensorType");
     }
@@ -72,9 +75,9 @@ class SensorValueGeneratorRegistryTest {
                 new StubSensorValueGenerator("TEMPERATURE");
         SensorValueGenerator secondGenerator =
                 new StubSensorValueGenerator("  TEMPERATURE  ");
+        List<SensorValueGenerator> generators = List.of(firstGenerator, secondGenerator);
 
-        assertThatThrownBy(() -> new SensorValueGeneratorRegistry(
-                List.of(firstGenerator, secondGenerator)))
+        assertThatThrownBy(() -> new SensorValueGeneratorRegistry(generators))
                 .isInstanceOf(SensorDataGenerationException.class)
                 .hasMessageContaining("중복");
     }

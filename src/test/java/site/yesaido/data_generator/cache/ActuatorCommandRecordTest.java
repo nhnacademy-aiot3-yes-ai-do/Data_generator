@@ -31,17 +31,17 @@ class ActuatorCommandRecordTest {
         ActuatorCommandRequest request = createRequest(controlId, commandId, ActuatorState.ON);
         ActuatorCommandResponse response = createAppliedResponse(controlId, commandId, ActuatorState.ON);
 
-        ActuatorCommandRecord record = new ActuatorCommandRecord(actuatorStateKey, request, response);
+        ActuatorCommandRecord commandRecord = new ActuatorCommandRecord(actuatorStateKey, request, response);
 
-        assertThat(record.actuatorStateKey()).isEqualTo(actuatorStateKey);
-        assertThat(record.actuatorCommandRequest()).isEqualTo(request);
-        assertThat(record.actuatorCommandResponse()).isEqualTo(response);
-        assertThat(record.matchesCommand(actuatorStateKey, request)).isTrue();
-        assertThat(record.matchesCommand(new ActuatorStateKey(1L, ActuatorType.COOLER), request)).isFalse();
+        assertThat(commandRecord.actuatorStateKey()).isEqualTo(actuatorStateKey);
+        assertThat(commandRecord.actuatorCommandRequest()).isEqualTo(request);
+        assertThat(commandRecord.actuatorCommandResponse()).isEqualTo(response);
+        assertThat(commandRecord.matchesCommand(actuatorStateKey, request)).isTrue();
+        assertThat(commandRecord.matchesCommand(new ActuatorStateKey(1L, ActuatorType.COOLER), request)).isFalse();
 
         ActuatorCommandRequest differentRequest = createRequest(controlId, commandId, ActuatorState.OFF);
 
-        assertThat(record.matchesCommand(actuatorStateKey, differentRequest)).isFalse();
+        assertThat(commandRecord.matchesCommand(actuatorStateKey, differentRequest)).isFalse();
     }
 
     @Test
@@ -117,9 +117,10 @@ class ActuatorCommandRecordTest {
         UUID commandId = UUID.randomUUID();
         ActuatorCommandRequest request = createRequest(controlId, commandId, ActuatorState.ON);
         ActuatorCommandResponse response = createAppliedResponse(controlId, commandId, ActuatorState.OFF);
+        ActuatorStateKey actuatorStateKey = new ActuatorStateKey(1L, ActuatorType.HEATER);
 
         assertThatThrownBy(() -> new ActuatorCommandRecord(
-                new ActuatorStateKey(1L, ActuatorType.HEATER), request, response))
+                actuatorStateKey, request, response))
                 .isInstanceOf(InvalidActuatorCommandException.class)
                 .hasMessageContaining("actualState");
     }
