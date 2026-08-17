@@ -47,7 +47,7 @@ jobs:
       - name: Run tests
         run: ./mvnw -B clean test
 
-      - name: Check JaCoCo 40% coverage
+      - name: Check JaCoCo 80% coverage
         id: coverage
         run: ./mvnw -B -DskipTests verify
 
