@@ -12,17 +12,17 @@ import site.yesaido.data_generator.service.VirtualActuatorService;
 
 @RestController
 @RequestMapping(
-        "/internal/cultivations/{cultivationId}/actuators"
+        "/api/internal/cultivations/{cultivation-id}/actuators"
 )
 @RequiredArgsConstructor
 public class VirtualActuatorController {
 
     private final VirtualActuatorService virtualActuatorService;
 
-    @PutMapping("/{actuatorType}/state")
+    @PutMapping("/{actuator-type}/state")
     public ResponseEntity<ActuatorCommandResponse> updateActuatorState(
-            @PathVariable("cultivationId") long cultivationId,
-            @PathVariable("actuatorType")ActuatorType actuatorType,
+            @PathVariable("cultivation-id") long cultivationId,
+            @PathVariable("actuator-type")ActuatorType actuatorType,
             @RequestBody ActuatorCommandRequest actuatorCommandRequest
             ) {
         ActuatorCommandResponse actuatorCommandResponse = virtualActuatorService.applyActuatorCommand(
