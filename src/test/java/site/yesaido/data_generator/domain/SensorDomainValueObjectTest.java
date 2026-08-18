@@ -39,7 +39,7 @@ class SensorDomainValueObjectTest {
                 mutableSensorTypes
         );
 
-        mutableSensorTypes.add(new SensorTypeSpec("HUMIDITY", "%RH"));
+        mutableSensorTypes.add(new SensorTypeSpec("HUMIDITY", "%"));
         Set<SensorTypeSpec> immutableSensorTypes = entry.sensorTypes();
         SensorTypeSpec co2 = new SensorTypeSpec("CO2", "ppm");
 

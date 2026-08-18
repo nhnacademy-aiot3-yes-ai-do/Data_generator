@@ -64,7 +64,7 @@ class ThresholdInfoEventServiceTest {
                 1L,
                 List.of(
                         range("TEMPERATURE", "°C", "10", "30"),
-                        range("HUMIDITY", "%RH", "40", "80")
+                        range("HUMIDITY", "%", "40", "80")
                 ),
                 OCCURRED_AT
         );
@@ -74,7 +74,7 @@ class ThresholdInfoEventServiceTest {
         assertThat(sensorThresholdCache.getThresholdCount()).isEqualTo(2);
         assertThat(sensorThresholdCache.find(new SensorThresholdKey(1L, "TEMPERATURE", "°C")))
                 .contains(new SensorThresholdRange(new BigDecimal("10"), new BigDecimal("30")));
-        assertThat(sensorThresholdCache.find(new SensorThresholdKey(1L, "HUMIDITY", "%RH")))
+        assertThat(sensorThresholdCache.find(new SensorThresholdKey(1L, "HUMIDITY", "%")))
                 .contains(new SensorThresholdRange(new BigDecimal("40"), new BigDecimal("80")));
         verifyNoInteractions(sensorValueGenerationResolver, virtualActuatorService);
     }
@@ -102,7 +102,7 @@ class ThresholdInfoEventServiceTest {
     @DisplayName("빈 임계값 이벤트는 해당 cultivation의 생성 상태와 캐시만 정리한다")
     void stopOnlyTargetCultivationForEmptyEvent() {
         SensorTypeSpec celsius = new SensorTypeSpec("TEMPERATURE", "°C");
-        SensorTypeSpec humidity = new SensorTypeSpec("HUMIDITY", "%RH");
+        SensorTypeSpec humidity = new SensorTypeSpec("HUMIDITY", "%");
         SensorTypeSpec co2 = new SensorTypeSpec("CO2", "ppm");
         sensorCache.replaceAll(List.of(
                 cacheEntry(1L, "device-A", Set.of(celsius, humidity)),
@@ -125,7 +125,7 @@ class ThresholdInfoEventServiceTest {
         verify(sensorValueGenerationResolver)
                 .removeState(new SensorChannelKey("device-A", "TEMPERATURE", "°C"));
         verify(sensorValueGenerationResolver)
-                .removeState(new SensorChannelKey("device-A", "HUMIDITY", "%RH"));
+                .removeState(new SensorChannelKey("device-A", "HUMIDITY", "%"));
         verify(sensorValueGenerationResolver, never())
                 .removeState(new SensorChannelKey("device-B", "CO2", "ppm"));
         verify(virtualActuatorService).removeCultivationState(1L);

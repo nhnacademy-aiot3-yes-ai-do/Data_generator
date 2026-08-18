@@ -78,7 +78,7 @@ class CultivationSensorSynchronizationServiceTest {
                 "device-A",
                 List.of(
                         new CultivationSensorTypeResponse("TEMPERATURE", "°C"),
-                        new CultivationSensorTypeResponse("HUMIDITY", "%RH")
+                        new CultivationSensorTypeResponse("HUMIDITY", "%")
                 )
         );
         DataGeneratorSensorResponse secondSensor = sensor(
@@ -153,7 +153,7 @@ class CultivationSensorSynchronizationServiceTest {
                         List.of(sensor(
                                 2L,
                                 "new-device",
-                                List.of(new CultivationSensorTypeResponse("HUMIDITY", "%RH"))
+                                List.of(new CultivationSensorTypeResponse("HUMIDITY", "%"))
                         )),
                         null
                 )

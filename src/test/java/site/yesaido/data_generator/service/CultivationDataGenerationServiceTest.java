@@ -180,13 +180,13 @@ class CultivationDataGenerationServiceTest {
     @DisplayName("한 장치의 센서값 생성 실패 후에도 다음 장치의 MQTT 발행을 계속한다")
     void continuePublishingNextDeviceAfterSensorValueGenerationFailure() {
         SensorTypeSpec firstSensorTypeSpec = new SensorTypeSpec("TEMPERATURE", "°C");
-        SensorTypeSpec secondSensorTypeSpec = new SensorTypeSpec("HUMIDITY", "%RH");
+        SensorTypeSpec secondSensorTypeSpec = new SensorTypeSpec("HUMIDITY", "%");
 
         SensorCacheEntry firstSensorCacheEntry = createSensorCacheEntry("device-A", Set.of(firstSensorTypeSpec));
         SensorCacheEntry secondSensorCacheEntry = createSensorCacheEntry("device-B", Set.of(secondSensorTypeSpec));
 
         SensorChannelKey firstSensorChannelKey = new SensorChannelKey("device-A", "TEMPERATURE", "°C");
-        SensorChannelKey secondSensorChannelKey = new SensorChannelKey("device-B", "HUMIDITY", "%RH");
+        SensorChannelKey secondSensorChannelKey = new SensorChannelKey("device-B", "HUMIDITY", "%");
 
         String firstTopic = "mushroom/송이버섯집/중앙 오른쪽/TEST123/device-A/TEMPERATURE";
         String secondTopic = "mushroom/송이버섯집/중앙 오른쪽/TEST123/device-B/HUMIDITY";

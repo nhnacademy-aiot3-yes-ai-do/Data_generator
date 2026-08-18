@@ -41,7 +41,7 @@ class StandardSensorUnitConverterTest {
                 Arguments.of("TEMPERATURE", "°C", 20.0, 20.0),
                 Arguments.of("TEMPERATURE", "°F", 20.0, 68.0),
                 Arguments.of("TEMPERATURE", "°F", 20.03, 68.1),
-                Arguments.of("HUMIDITY", "%RH", 75.5, 75.5),
+                Arguments.of("HUMIDITY", "%", 75.5, 75.5),
                 Arguments.of("CO2", "ppm", 1_500L, 1_500.0),
                 Arguments.of("LIGHT", "lux", 350, 350.0)
         );
@@ -58,7 +58,7 @@ class StandardSensorUnitConverterTest {
     private static Stream<Arguments> unsupportedConversions() {
         return Stream.of(
                 Arguments.of("TEMPERATURE", "K"),
-                Arguments.of("HUMIDITY", "%"),
+                Arguments.of("HUMIDITY", "%RH"),
                 Arguments.of("CO2", "ppb"),
                 Arguments.of("LIGHT", "lumen"),
                 Arguments.of("SOIL_MOISTURE", "%")

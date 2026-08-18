@@ -38,7 +38,7 @@ public class LocalSensorFixtureInitializer implements ApplicationRunner { // 로
     private static final Set<SensorTypeSpec> FIXTURE_SENSOR_TYPES = Set.of(
             new SensorTypeSpec("TEMPERATURE", "°C"),
             new SensorTypeSpec("TEMPERATURE", "°F"),
-            new SensorTypeSpec("HUMIDITY", "%RH"),
+            new SensorTypeSpec("HUMIDITY", "%"),
             new SensorTypeSpec("CO2", "ppm"),
             new SensorTypeSpec("LIGHT", "lux"),
             new SensorTypeSpec(FIXTURE_DYNAMIC_SENSOR_TYPE,FIXTURE_DYNAMIC_SENSOR_UNIT)
