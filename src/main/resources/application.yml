@@ -11,6 +11,19 @@ spring:
     username: ${RABBITMQ_USERNAME}
     password: ${RABBITMQ_PASSWORD}
 
+  cloud:
+    kubernetes:
+      discovery:
+        enabled: ${K8S_DISCOVERY_ENABLED:false}
+
+eureka:
+  client:
+    enabled: ${EUREKA_ENABLED:false}
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+  instance:
+    prefer-ip-address: true
+
 mqtt:
   broker-url: "${MQTT_BROKER_URL}"
   client-id: "${MQTT_CLIENT_ID}"
