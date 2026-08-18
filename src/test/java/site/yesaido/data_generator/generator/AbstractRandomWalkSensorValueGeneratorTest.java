@@ -87,7 +87,7 @@ class AbstractRandomWalkSensorValueGeneratorTest {
     @DisplayName("null 또는 다른 타입의 센서 채널은 거절한다")
     void rejectUnsupportedSensorChannel() {
         SensorChannelKey unsupportedChannelKey = new SensorChannelKey(
-                "device-A", "HUMIDITY", "%RH");
+                "device-A", "HUMIDITY", "%");
 
         assertThatThrownBy(() -> generator.generateNextValue(null, 0.0))
                 .isInstanceOf(SensorDataGenerationException.class)

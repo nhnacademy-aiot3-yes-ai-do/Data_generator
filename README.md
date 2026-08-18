@@ -89,7 +89,7 @@ Cultivation Server snapshot 조회
 | sensorType | 지원 단위 | 내부 표준 단위 |
 |---|---|---|
 | `TEMPERATURE` | `°C`, `°F` | 섭씨 |
-| `HUMIDITY` | `%RH` | 상대습도 |
+| `HUMIDITY` | `%` | 상대습도 |
 | `CO2` | `ppm` | ppm |
 | `LIGHT` | `lux` | lux |
 
@@ -357,7 +357,7 @@ fixture 채널:
 
 - `TEMPERATURE/°C`
 - `TEMPERATURE/°F`
-- `HUMIDITY/%RH`
+- `HUMIDITY/%`
 - `CO2/ppm`
 - `LIGHT/lux`
 - `SOIL_MOISTURE/%`

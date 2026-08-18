@@ -57,7 +57,7 @@ class RandomWalkGeneratorAdditionalTest {
         SensorChannelKey deviceATemperature = new SensorChannelKey(
                 "device-A", "TEMPERATURE", "°C");
         SensorChannelKey deviceAHumidity = new SensorChannelKey(
-                "device-A", "HUMIDITY", "%RH");
+                "device-A", "HUMIDITY", "%");
         SensorChannelKey deviceBTemperature = new SensorChannelKey(
                 "device-B", "TEMPERATURE", "°C");
 
