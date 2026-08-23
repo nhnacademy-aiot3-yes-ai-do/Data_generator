@@ -20,8 +20,7 @@ public class SensorInfoEventService {
     private final SensorCache sensorCache;
     private final SensorValueGenerationResolver sensorValueGenerationResolver;
 
-    public void processUpsertEvent(
-            SensorInfoUpsertEvent sensorInfoUpsertEvent) {
+    public void processUpsertEvent(SensorInfoUpsertEvent sensorInfoUpsertEvent) {
         if (sensorInfoUpsertEvent == null) {
             throw new SensorSynchronizationException(
                     "sensorInfoUpsertEvent는 null일 수 없습니다."

@@ -8,6 +8,6 @@ import java.util.List;
 
 @FeignClient(name = "cultivation-server")
 public interface CultivationSensorReadable {
-    @GetMapping("/api/internal/data-generator/snapshot")
+    @GetMapping("/api/v1/internal/data-generator/snapshot")
     DataGeneratorSnapshotResponse getSnapshot();
 }
