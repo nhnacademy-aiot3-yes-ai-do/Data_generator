@@ -6,7 +6,7 @@ import site.yesaido.data_generator.dto.response.DataGeneratorSnapshotResponse;
 
 import java.util.List;
 
-@FeignClient(name = "cultivation-server")
+@FeignClient(name = "cultivation-server", url = "${cultivation_url}")
 public interface CultivationSensorReadable {
     @GetMapping("/api/v1/internal/data-generator/snapshot")
     DataGeneratorSnapshotResponse getSnapshot();
