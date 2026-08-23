@@ -67,9 +67,7 @@ public class CultivationSensorSynchronizationService {
         }
     }
 
-    private List<SensorCacheEntry> toSensorCacheEntries(
-            List<DataGeneratorSensorResponse> sensors
-    ) {
+    private List<SensorCacheEntry> toSensorCacheEntries(List<DataGeneratorSensorResponse> sensors) {
         if (sensors == null) {
             throw new SensorSynchronizationException("snapshot의 sensors는 null일 수 없습니다.");
         }
@@ -130,8 +128,7 @@ public class CultivationSensorSynchronizationService {
         }
     }
 
-    private Map<SensorThresholdKey, SensorThresholdRange> toThresholdEntries(
-            List<DataGeneratorThresholdResponse> thresholds) {
+    private Map<SensorThresholdKey, SensorThresholdRange> toThresholdEntries(List<DataGeneratorThresholdResponse> thresholds) {
         if (thresholds == null) {
             throw new SensorSynchronizationException("snapshot의 thresholds는 null일 수 없습니다.");
         }

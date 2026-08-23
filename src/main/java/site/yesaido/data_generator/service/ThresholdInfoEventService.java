@@ -30,9 +30,7 @@ public class ThresholdInfoEventService {
     private final SensorValueGenerationResolver sensorValueGenerationResolver;
     private final VirtualActuatorService virtualActuatorService;
 
-    public void processThresholdEvent(
-            ThresholdInfoEvent thresholdInfoEvent
-    ) {
+    public void processThresholdEvent(ThresholdInfoEvent thresholdInfoEvent) {
         if (thresholdInfoEvent == null) {
             throw new SensorSynchronizationException("thresholdInfoEvent는 null일 수 없습니다.");
         }
