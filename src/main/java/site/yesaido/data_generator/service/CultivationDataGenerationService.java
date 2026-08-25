@@ -75,6 +75,7 @@ public class CultivationDataGenerationService {
 
            Number generatedValue = optionalGeneratedValue.get();
 
+
            String topic = mqttTopicGenerator.generateTopic(sensorCacheEntry,sensorTypeSpec);
            byte[] payload = mqttPayloadSerializer.serializePayload(generatedValue,sensorTypeSpec,sensorCacheEntry);
            CompletionStage<Void> publishResult = mqttPublishable.publishMessage(topic,payload);

@@ -3,6 +3,9 @@ package site.yesaido.data_generator.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 import site.yesaido.data_generator.cache.ActuatorCache;
 import site.yesaido.data_generator.cache.SensorCache;
 import site.yesaido.data_generator.domain.ActuatorCommandStatus;
@@ -24,6 +27,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+@ExtendWith(OutputCaptureExtension.class)
 class VirtualActuatorServiceTest {
 
     private static final Instant NOW = Instant.parse("2026-08-17T05:00:00Z");
@@ -46,7 +50,7 @@ class VirtualActuatorServiceTest {
 
     @Test
     @DisplayName("유효한 ON 명령을 적용하고 상태와 명령 결과를 캐시에 기록한다")
-    void applyValidOnCommandAndRecordResult() {
+    void applyValidOnCommandAndRecordResult(CapturedOutput output) {
         completeInitialSynchronization();
         ActuatorCommandRequest request = createRequest(
                 UUID.randomUUID(), UUID.randomUUID(), ActuatorState.ON,
@@ -65,6 +69,14 @@ class VirtualActuatorServiceTest {
         assertThat(actuatorCache.findCommandRecord(request.commandId())).isPresent();
         assertThat(virtualActuatorService.getActiveActuatorTypesSnapshot(1L))
                 .containsExactly(ActuatorType.HEATER);
+        assertThat(output)
+                .contains("event=ACTUATOR_STATE_APPLIED")
+                .contains("cultivationId=1")
+                .contains("actuatorType=HEATER")
+                .contains("previousCachedState=OFF")
+                .contains("actualState=ON")
+                .contains("stateValueChanged=true")
+                .contains("commandId=" + request.commandId());
     }
 
     @Test
@@ -87,7 +99,7 @@ class VirtualActuatorServiceTest {
 
     @Test
     @DisplayName("같은 commandId를 다른 요청에 재사용하면 현재 상태와 함께 충돌 응답을 반환한다")
-    void rejectReusedCommandIdWithDifferentRequest() {
+    void rejectReusedCommandIdWithDifferentRequest(CapturedOutput output) {
         completeInitialSynchronization();
         UUID commandId = UUID.randomUUID();
         UUID controlId = UUID.randomUUID();
@@ -108,11 +120,14 @@ class VirtualActuatorServiceTest {
         assertThat(actuatorCache.getActualState(
                 new ActuatorStateKey(1L, ActuatorType.HEATER))).isEqualTo(ActuatorState.ON);
         assertThat(actuatorCache.getCommandRecordCount()).isEqualTo(1);
+        assertThat(output)
+                .contains("reason=COMMAND_ID_REUSED_WITH_DIFFERENT_PAYLOAD")
+                .contains("recorded=false");
     }
 
     @Test
     @DisplayName("현재 시각에 만료된 명령을 거절하고 실제 상태는 변경하지 않는다")
-    void rejectExpiredCommand() {
+    void rejectExpiredCommand(CapturedOutput output) {
         completeInitialSynchronization();
         ActuatorCommandRequest request = createRequest(
                 UUID.randomUUID(), UUID.randomUUID(), ActuatorState.ON,
@@ -126,6 +141,12 @@ class VirtualActuatorServiceTest {
         assertThat(response.appliedAt()).isNull();
         assertThat(actuatorCache.getStateEntryCount()).isZero();
         assertThat(actuatorCache.findCommandRecord(request.commandId())).isPresent();
+        assertThat(output)
+                .contains("event=ACTUATOR_COMMAND_REJECTED")
+                .contains("reason=COMMAND_EXPIRED")
+                .contains("status=REJECTED_EXPIRED")
+                .contains("stateMutated=false")
+                .contains("recorded=true");
     }
 
     @Test
@@ -202,7 +223,7 @@ class VirtualActuatorServiceTest {
 
     @Test
     @DisplayName("초기 센서 동기화 전에는 명령을 처리하지 않는다")
-    void rejectCommandBeforeInitialSensorSynchronization() {
+    void rejectCommandBeforeInitialSensorSynchronization(CapturedOutput output) {
         ActuatorCommandRequest request = createRequest(
                 UUID.randomUUID(), UUID.randomUUID(), ActuatorState.ON,
                 NOW.minusSeconds(10), NOW.plusSeconds(10));
@@ -213,6 +234,9 @@ class VirtualActuatorServiceTest {
 
         assertThat(actuatorCache.getStateEntryCount()).isZero();
         assertThat(actuatorCache.getCommandRecordCount()).isZero();
+        assertThat(output)
+                .contains("reason=INITIAL_SYNCHRONIZATION_INCOMPLETE")
+                .contains("recorded=false");
     }
 
     @Test
@@ -230,7 +254,7 @@ class VirtualActuatorServiceTest {
 
     @Test
     @DisplayName("재배 상태 제거를 액추에이터 캐시에 위임한다")
-    void removeCultivationState() {
+    void removeCultivationState(CapturedOutput output) {
         ActuatorStateKey firstCultivationKey = new ActuatorStateKey(1L, ActuatorType.HEATER);
         ActuatorStateKey secondCultivationKey = new ActuatorStateKey(2L, ActuatorType.HEATER);
         actuatorCache.putStateEntry(
@@ -246,6 +270,11 @@ class VirtualActuatorServiceTest {
 
         assertThat(actuatorCache.findStateEntry(firstCultivationKey)).isEmpty();
         assertThat(actuatorCache.findStateEntry(secondCultivationKey)).isPresent();
+        assertThat(output)
+                .contains("event=ACTUATOR_STATE_CLEARED")
+                .contains("cultivationId=1")
+                .contains("previouslyActiveActuatorTypes=[HEATER]")
+                .contains("reason=CULTIVATION_REMOVED");
     }
 
     private void completeInitialSynchronization() {
