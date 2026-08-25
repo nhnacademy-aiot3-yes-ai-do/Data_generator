@@ -73,9 +73,9 @@ class VirtualActuatorServiceTest {
                 .contains("event=ACTUATOR_STATE_APPLIED")
                 .contains("cultivationId=1")
                 .contains("actuatorType=HEATER")
-                .contains("previousState=OFF")
+                .contains("previousCachedState=OFF")
                 .contains("actualState=ON")
-                .contains("stateChanged=true")
+                .contains("stateValueChanged=true")
                 .contains("commandId=" + request.commandId());
     }
 

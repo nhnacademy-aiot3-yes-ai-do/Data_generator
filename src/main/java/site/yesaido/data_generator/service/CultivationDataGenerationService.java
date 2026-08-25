@@ -75,18 +75,6 @@ public class CultivationDataGenerationService {
 
            Number generatedValue = optionalGeneratedValue.get();
 
-           if (Double.compare(actuatorEffectAmount, 0.0) != 0) {
-               log.debug(
-                       "event=ACTUATOR_EFFECT_APPLIED cultivationId={}, deviceEui={}, sensorType={}, unit={}, activeActuatorTypes={}, effectAmount={}, generatedValue={}",
-                       cultivationId,
-                       sensorCacheEntry.deviceEui(),
-                       sensorTypeSpec.sensorType(),
-                       sensorTypeSpec.unit(),
-                       activeActuatorTypes,
-                       actuatorEffectAmount,
-                       generatedValue
-               );
-           }
 
            String topic = mqttTopicGenerator.generateTopic(sensorCacheEntry,sensorTypeSpec);
            byte[] payload = mqttPayloadSerializer.serializePayload(generatedValue,sensorTypeSpec,sensorCacheEntry);
