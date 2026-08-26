@@ -104,20 +104,22 @@ class EnvironmentRandomWalkGeneratorTest {
     @Test
     @DisplayName("더 오래된 생성 주기는 거절하고 최신 상태를 유지한다")
     void rejectStaleCycle() {
-        generator.advance(TEMPERATURE_KEY, createMovableConfiguration(), 0.0, 1L);
+        MeasurementConfiguration configuration = createMovableConfiguration();
+
+        generator.advance(TEMPERATURE_KEY, configuration, 0.0, 1L);
 
         when(randomGenerator.nextDouble(-1.0, 1.0)).thenReturn(0.5);
 
         EnvironmentState latestState = generator.advance(
-                TEMPERATURE_KEY, createMovableConfiguration(), 0.0, 3L);
+                TEMPERATURE_KEY, configuration, 0.0, 3L);
 
         assertThatThrownBy(() -> generator.advance(
-                TEMPERATURE_KEY, createMovableConfiguration(), 0.0, 2L))
+                TEMPERATURE_KEY, configuration, 0.0, 2L))
                 .isInstanceOf(SensorDataGenerationException.class)
                 .hasMessageContaining("lastAdvancedCycleId");
 
         EnvironmentState retainedState = generator.advance(
-                TEMPERATURE_KEY, createMovableConfiguration(), 0.0, 3L);
+                TEMPERATURE_KEY, configuration, 0.0, 3L);
 
         assertThat(retainedState).isEqualTo(latestState);
 
@@ -236,8 +238,10 @@ class EnvironmentRandomWalkGeneratorTest {
     @MethodSource("nonFiniteActuatorEffects")
     @DisplayName("유한하지 않은 액추에이터 효과를 거절한다")
     void rejectNonFiniteActuatorEffect(double actuatorEffect) {
+        MeasurementConfiguration configuration = createMovableConfiguration();
+
         assertThatThrownBy(() -> generator.advance(
-                TEMPERATURE_KEY, createMovableConfiguration(), actuatorEffect, 1L))
+                TEMPERATURE_KEY, configuration, actuatorEffect, 1L))
                 .isInstanceOf(SensorDataGenerationException.class)
                 .hasMessageContaining("actuatorEffectAmount");
     }
@@ -254,8 +258,10 @@ class EnvironmentRandomWalkGeneratorTest {
     @ValueSource(longs = {0L, -1L, Long.MIN_VALUE})
     @DisplayName("생성 주기 ID는 양수여야 한다")
     void rejectNonPositiveCycleId(long cycleId) {
+        MeasurementConfiguration configuration = createMovableConfiguration();
+
         assertThatThrownBy(() -> generator.advance(
-                TEMPERATURE_KEY, createMovableConfiguration(), 0.0, cycleId))
+                TEMPERATURE_KEY, configuration, 0.0, cycleId))
                 .isInstanceOf(SensorDataGenerationException.class)
                 .hasMessageContaining("cycleId");
     }

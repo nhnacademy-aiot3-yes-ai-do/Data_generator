@@ -9,6 +9,8 @@ import java.util.Optional;
 @Component
 public final class StandardSensorUnitConverter implements SensorUnitConverter {
 
+    private static final String SENSOR_TYPE_FIELD_NAME = "sensorType";
+
     private static final String TEMPERATURE = "TEMPERATURE";
     private static final String HUMIDITY = "HUMIDITY";
     private static final String CO2 = "CO2";
@@ -22,7 +24,7 @@ public final class StandardSensorUnitConverter implements SensorUnitConverter {
 
     @Override
     public Optional<String> findCanonicalUnit(String sensorType) {
-        String normalizedSensorType = normalizeRequiredText(sensorType, "sensorType");
+        String normalizedSensorType = normalizeRequiredText(sensorType, SENSOR_TYPE_FIELD_NAME);
 
         return switch (normalizedSensorType) {
             case TEMPERATURE -> Optional.of(CELSIUS);
@@ -35,7 +37,7 @@ public final class StandardSensorUnitConverter implements SensorUnitConverter {
 
     @Override
     public Optional<Number> convertToCanonical(String sensorType, String unit, Number sourceValue) {
-        String normalizedSensorType = normalizeRequiredText(sensorType, "sensorType");
+        String normalizedSensorType = normalizeRequiredText(sensorType, SENSOR_TYPE_FIELD_NAME);
         String normalizedUnit = normalizeRequiredText(unit, "unit");
 
         validateFiniteValue(sourceValue, "sourceValue");
@@ -51,7 +53,7 @@ public final class StandardSensorUnitConverter implements SensorUnitConverter {
 
     @Override
     public Optional<Number> convertFromCanonical(String sensorType, String unit, Number canonicalValue) {
-        String normalizedSensorType = normalizeRequiredText(sensorType, "sensorType");
+        String normalizedSensorType = normalizeRequiredText(sensorType, SENSOR_TYPE_FIELD_NAME);
         String normalizedUnit = normalizeRequiredText(unit, "unit");
 
         validateFiniteValue(canonicalValue, "canonicalValue");

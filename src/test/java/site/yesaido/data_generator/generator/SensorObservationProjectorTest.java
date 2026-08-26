@@ -156,9 +156,12 @@ class SensorObservationProjectorTest {
         assertThat(repeatedState)
                 .isSameAs(originalState);
 
+        EnvironmentState staleEnvironmentState =
+                new EnvironmentState(40.0, 1L);
+
         assertThatThrownBy(() -> projector.project(
                 SENSOR_A_KEY,
-                new EnvironmentState(40.0, 1L),
+                staleEnvironmentState,
                 configuration
         ))
                 .isInstanceOf(SensorDataGenerationException.class)
@@ -262,9 +265,12 @@ class SensorObservationProjectorTest {
                         2
                 );
 
+        EnvironmentState environmentState =
+                new EnvironmentState(0.0, 1L);
+
         assertThatThrownBy(() -> projector.project(
                 SENSOR_A_KEY,
-                new EnvironmentState(0.0, 1L),
+                environmentState,
                 overflowingConfiguration
         ))
                 .isInstanceOf(SensorDataGenerationException.class)

@@ -27,9 +27,10 @@ class EnvironmentDomainValueObjectTest {
     @DisplayName("환경 상태 키의 구성 요소가 다르면 서로 다른 키이다")
     void distinguishEnvironmentStateKeys() {
         EnvironmentStateKey base = new EnvironmentStateKey(1L, "TEMPERATURE", "°C");
-        assertThat(base).isNotEqualTo(new EnvironmentStateKey(2L, "TEMPERATURE", "°C"));
-        assertThat(base).isNotEqualTo(new EnvironmentStateKey(1L, "HUMIDITY", "°C"));
-        assertThat(base).isNotEqualTo(new EnvironmentStateKey(1L, "TEMPERATURE", "%"));
+        assertThat(base)
+                .isNotEqualTo(new EnvironmentStateKey(2L, "TEMPERATURE", "°C"))
+                .isNotEqualTo(new EnvironmentStateKey(1L, "HUMIDITY", "°C"))
+                .isNotEqualTo(new EnvironmentStateKey(1L, "TEMPERATURE", "%"));
     }
 
     @ParameterizedTest

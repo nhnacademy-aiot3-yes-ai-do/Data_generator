@@ -1,6 +1,7 @@
 package site.yesaido.data_generator.generator;
 
 import java.util.concurrent.atomic.AtomicLong;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import site.yesaido.data_generator.exception.SensorDataGenerationException;
 
@@ -13,6 +14,7 @@ public final class GenerationCycleSequence {
 
     private final AtomicLong lastIssuedCycleId;
 
+    @Autowired
     public GenerationCycleSequence() {
         this(0L);
     }

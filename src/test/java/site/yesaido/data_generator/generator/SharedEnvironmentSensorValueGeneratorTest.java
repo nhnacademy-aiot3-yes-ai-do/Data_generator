@@ -373,10 +373,12 @@ class SharedEnvironmentSensorValueGeneratorTest {
     @ParameterizedTest
     @ValueSource(longs = {0L, -1L, Long.MIN_VALUE})
     void rejectNonPositiveCultivationId(long cultivationId) {
+        SensorChannelKey channelKey = validChannelKey();
+
         assertThatThrownBy(() ->
                 generator.generateNextValue(
                         cultivationId,
-                        validChannelKey(),
+                        channelKey,
                         ACTUATOR_EFFECT,
                         CYCLE_ID
                 ))
@@ -404,10 +406,12 @@ class SharedEnvironmentSensorValueGeneratorTest {
     @ParameterizedTest
     @MethodSource("nonFiniteActuatorEffects")
     void rejectNonFiniteActuatorEffect(double actuatorEffect) {
+        SensorChannelKey channelKey = validChannelKey();
+
         assertThatThrownBy(() ->
                 generator.generateNextValue(
                         CULTIVATION_ID,
-                        validChannelKey(),
+                        channelKey,
                         actuatorEffect,
                         CYCLE_ID
                 ))
@@ -420,10 +424,12 @@ class SharedEnvironmentSensorValueGeneratorTest {
     @ParameterizedTest
     @ValueSource(longs = {0L, -1L, Long.MIN_VALUE})
     void rejectNonPositiveCycleId(long cycleId) {
+        SensorChannelKey channelKey = validChannelKey();
+
         assertThatThrownBy(() ->
                 generator.generateNextValue(
                         CULTIVATION_ID,
-                        validChannelKey(),
+                        channelKey,
                         ACTUATOR_EFFECT,
                         cycleId
                 ))

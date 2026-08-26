@@ -35,9 +35,10 @@ class SensorObservationDomainValueObjectTest {
         EnvironmentStateKey environmentStateKey = new EnvironmentStateKey(1L, "TEMPERATURE", "°C");
         SensorObservationKey base = new SensorObservationKey(environmentStateKey, "sensor-eui-001");
 
-        assertThat(base).isNotEqualTo(new SensorObservationKey(environmentStateKey, "sensor-eui-002"));
-        assertThat(base).isNotEqualTo(new SensorObservationKey(new EnvironmentStateKey(
-                2L, "TEMPERATURE", "°C"), "sensor-eui-001"));
+        assertThat(base)
+                .isNotEqualTo(new SensorObservationKey(environmentStateKey, "sensor-eui-002"))
+                .isNotEqualTo(new SensorObservationKey(new EnvironmentStateKey(
+                        2L, "TEMPERATURE", "°C"), "sensor-eui-001"));
     }
 
     @Test
