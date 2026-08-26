@@ -13,7 +13,7 @@ import site.yesaido.data_generator.domain.SensorCacheEntry;
 import site.yesaido.data_generator.domain.SensorChannelKey;
 import site.yesaido.data_generator.domain.SensorTypeSpec;
 import site.yesaido.data_generator.exception.SensorDataGenerationException;
-import site.yesaido.data_generator.generator.SensorValueGenerationResolver;
+import site.yesaido.data_generator.generator.SharedEnvironmentSensorValueGenerator;
 import site.yesaido.data_generator.mqtt.MqttPayloadSerializer;
 import site.yesaido.data_generator.mqtt.MqttPublishable;
 import site.yesaido.data_generator.mqtt.MqttTopicGenerator;
@@ -32,6 +32,8 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class CultivationDataGenerationServiceTest {
 
+    private static final long CYCLE_ID = 41L;
+
     @Mock
     private SensorCache sensorCache;
 
@@ -48,7 +50,12 @@ class CultivationDataGenerationServiceTest {
     private VirtualActuatorService virtualActuatorService;
 
     @Mock
-    private SensorValueGenerationResolver sensorValueGenerationResolver;
+    private SharedEnvironmentSensorValueGenerator
+            sharedEnvironmentSensorValueGenerator;
+
+    @Mock
+    private SharedGenerationStateLifecycle
+            sharedGenerationStateLifecycle;
 
     private CultivationDataGenerationService cultivationDataGenerationService;
 
@@ -60,7 +67,8 @@ class CultivationDataGenerationServiceTest {
                         mqttPayloadSerializer,
                         mqttPublishable,
                         virtualActuatorService,
-                        sensorValueGenerationResolver
+                        sharedEnvironmentSensorValueGenerator,
+                        sharedGenerationStateLifecycle
                 );
     }
 
@@ -94,9 +102,19 @@ class CultivationDataGenerationServiceTest {
 
         when(sensorCache.findByDeviceEui("device-A")).thenReturn(Optional.of(sensorCacheEntry));
 
-        when(sensorValueGenerationResolver.generateNextValue(1L, celsiusKey, 0.5))
+        when(sharedEnvironmentSensorValueGenerator.generateNextValue(
+                1L,
+                celsiusKey,
+                0.5,
+                CYCLE_ID
+        ))
                 .thenReturn(Optional.of(20.0));
-        when(sensorValueGenerationResolver.generateNextValue(1L, fahrenheitKey, 0.5))
+        when(sharedEnvironmentSensorValueGenerator.generateNextValue(
+                1L,
+                fahrenheitKey,
+                0.5,
+                CYCLE_ID
+        ))
                 .thenReturn(Optional.of(68.0));
 
         when(mqttTopicGenerator.generateTopic(sensorCacheEntry, celsiusSpec)).thenReturn(topic);
@@ -113,15 +131,35 @@ class CultivationDataGenerationServiceTest {
         when(mqttPublishable.publishMessage(topic, fahrenheitPayload))
                 .thenReturn(CompletableFuture.completedFuture(null));
 
-        cultivationDataGenerationService.generateAndPublishSensorData(1L, List.of(sensorCacheEntry));
+        cultivationDataGenerationService.generateAndPublishSensorData(
+                1L,
+                List.of(sensorCacheEntry),
+                CYCLE_ID
+        );
 
-        verify(sensorValueGenerationResolver).generateNextValue(1L, celsiusKey, 0.5);
-        verify(sensorValueGenerationResolver).generateNextValue(1L, fahrenheitKey, 0.5);
+        verify(sharedEnvironmentSensorValueGenerator)
+                .generateNextValue(
+                        1L,
+                        celsiusKey,
+                        0.5,
+                        CYCLE_ID
+                );
+        verify(sharedEnvironmentSensorValueGenerator)
+                .generateNextValue(
+                        1L,
+                        fahrenheitKey,
+                        0.5,
+                        CYCLE_ID
+                );
 
         verify(mqttPublishable).publishMessage(topic, celsiusPayload);
         verify(mqttPublishable).publishMessage(topic, fahrenheitPayload);
 
-        verify(sensorValueGenerationResolver, never()).removeState(any());
+        verify(sharedGenerationStateLifecycle, never())
+                .removeDeletedChannelState(
+                        anyLong(),
+                        any()
+                );
     }
 
     @Test
@@ -137,16 +175,35 @@ class CultivationDataGenerationServiceTest {
         when(sensorCache.findByDeviceEui("device-A"))
                 .thenReturn(Optional.of(sensorCacheEntry));
 
-        when(sensorValueGenerationResolver.generateNextValue(1L, sensorChannelKey, 0.0))
+        when(sharedEnvironmentSensorValueGenerator.generateNextValue(
+                1L,
+                sensorChannelKey,
+                0.0,
+                CYCLE_ID
+        ))
                 .thenReturn(Optional.empty());
 
-        cultivationDataGenerationService.generateAndPublishSensorData(1L, List.of(sensorCacheEntry));
+        cultivationDataGenerationService.generateAndPublishSensorData(
+                1L,
+                List.of(sensorCacheEntry),
+                CYCLE_ID
+        );
 
-        verify(sensorValueGenerationResolver).generateNextValue(1L, sensorChannelKey, 0.0);
+        verify(sharedEnvironmentSensorValueGenerator)
+                .generateNextValue(
+                        1L,
+                        sensorChannelKey,
+                        0.0,
+                        CYCLE_ID
+                );
 
         verifyNoInteractions(mqttTopicGenerator, mqttPayloadSerializer, mqttPublishable);
 
-        verify(sensorValueGenerationResolver, never()).removeState(any());
+        verify(sharedGenerationStateLifecycle, never())
+                .removeDeletedChannelState(
+                        anyLong(),
+                        any()
+                );
     }
 
     @Test
@@ -167,11 +224,29 @@ class CultivationDataGenerationServiceTest {
         when(sensorCache.findByDeviceEui("device-A"))
                 .thenReturn(Optional.of(currentEntry));
 
-        cultivationDataGenerationService.generateAndPublishSensorData(1L, List.of(snapshotEntry));
+        cultivationDataGenerationService.generateAndPublishSensorData(
+                1L,
+                List.of(snapshotEntry),
+                CYCLE_ID
+        );
 
-        verify(sensorValueGenerationResolver).removeState(fahrenheitKey);
-        verify(sensorValueGenerationResolver, never()).removeState(celsiusKey);
-        verify(sensorValueGenerationResolver, never()).generateNextValue(anyLong(), any(), anyDouble());
+        verify(sharedGenerationStateLifecycle)
+                .removeDeletedChannelState(
+                        1L,
+                        fahrenheitKey
+                );
+        verify(sharedGenerationStateLifecycle, never())
+                .removeDeletedChannelState(
+                        1L,
+                        celsiusKey
+                );
+        verify(sharedEnvironmentSensorValueGenerator, never())
+                .generateNextValue(
+                        anyLong(),
+                        any(),
+                        anyDouble(),
+                        anyLong()
+                );
 
         verifyNoInteractions(mqttTopicGenerator, mqttPayloadSerializer, mqttPublishable);
     }
@@ -196,10 +271,20 @@ class CultivationDataGenerationServiceTest {
         when(virtualActuatorService.getActiveActuatorTypesSnapshot(1L)).thenReturn(Set.of());
         when(sensorCache.findByDeviceEui("device-A")).thenReturn(Optional.of(firstSensorCacheEntry));
         when(sensorCache.findByDeviceEui("device-B")).thenReturn(Optional.of(secondSensorCacheEntry));
-        when(sensorValueGenerationResolver.generateNextValue(1L, firstSensorChannelKey, 0.0))
+        when(sharedEnvironmentSensorValueGenerator.generateNextValue(
+                1L,
+                firstSensorChannelKey,
+                0.0,
+                CYCLE_ID
+        ))
                 .thenThrow(new RuntimeException("의도적인 센서값 생성 실패"));
 
-        when(sensorValueGenerationResolver.generateNextValue(1L, secondSensorChannelKey, 0.0))
+        when(sharedEnvironmentSensorValueGenerator.generateNextValue(
+                1L,
+                secondSensorChannelKey,
+                0.0,
+                CYCLE_ID
+        ))
                 .thenReturn(Optional.of(80.0));
 
         when(mqttTopicGenerator.generateTopic(secondSensorCacheEntry, secondSensorTypeSpec))
@@ -212,16 +297,36 @@ class CultivationDataGenerationServiceTest {
                 .thenReturn(CompletableFuture.completedFuture(null));
 
         assertThatCode(() -> cultivationDataGenerationService
-                .generateAndPublishSensorData(1L, List.of(firstSensorCacheEntry, secondSensorCacheEntry)))
+                .generateAndPublishSensorData(
+                        1L,
+                        List.of(
+                                firstSensorCacheEntry,
+                                secondSensorCacheEntry
+                        ),
+                        CYCLE_ID
+                ))
                 .doesNotThrowAnyException();
 
-        InOrder resolverCallOrder = inOrder(sensorValueGenerationResolver);
+        InOrder generatorCallOrder =
+                inOrder(sharedEnvironmentSensorValueGenerator);
 
-        resolverCallOrder.verify(sensorValueGenerationResolver)
-                .generateNextValue(1L, firstSensorChannelKey, 0.0);
+        generatorCallOrder
+                .verify(sharedEnvironmentSensorValueGenerator)
+                .generateNextValue(
+                        1L,
+                        firstSensorChannelKey,
+                        0.0,
+                        CYCLE_ID
+                );
 
-        resolverCallOrder.verify(sensorValueGenerationResolver)
-                .generateNextValue(1L, secondSensorChannelKey, 0.0);
+        generatorCallOrder
+                .verify(sharedEnvironmentSensorValueGenerator)
+                .generateNextValue(
+                        1L,
+                        secondSensorChannelKey,
+                        0.0,
+                        CYCLE_ID
+                );
 
         verify(mqttTopicGenerator, never()).generateTopic(firstSensorCacheEntry, firstSensorTypeSpec);
         verify(mqttPayloadSerializer, never()).serializePayload(any(), eq(firstSensorTypeSpec), eq(firstSensorCacheEntry));
@@ -231,7 +336,11 @@ class CultivationDataGenerationServiceTest {
         verify(mqttPayloadSerializer).serializePayload(80.0, secondSensorTypeSpec, secondSensorCacheEntry);
         verify(mqttPublishable).publishMessage(secondTopic, secondPayload);
 
-        verify(sensorValueGenerationResolver, never()).removeState(any());
+        verify(sharedGenerationStateLifecycle, never())
+                .removeDeletedChannelState(
+                        anyLong(),
+                        any()
+                );
         verifyNoMoreInteractions(mqttTopicGenerator, mqttPayloadSerializer, mqttPublishable);
     }
 
@@ -248,7 +357,12 @@ class CultivationDataGenerationServiceTest {
         when(virtualActuatorService.getActiveActuatorTypesSnapshot(1L)).thenReturn(Set.of());
 
         when(sensorCache.findByDeviceEui("device-A")).thenReturn(Optional.of(sensorCacheEntry));
-        when(sensorValueGenerationResolver.generateNextValue(1L, sensorChannelKey, 0.0))
+        when(sharedEnvironmentSensorValueGenerator.generateNextValue(
+                1L,
+                sensorChannelKey,
+                0.0,
+                CYCLE_ID
+        ))
                 .thenReturn(Optional.of(20.0));
 
         when(mqttTopicGenerator.generateTopic(sensorCacheEntry, sensorTypeSpec)).thenReturn(topic);
@@ -259,14 +373,28 @@ class CultivationDataGenerationServiceTest {
                 .thenReturn(CompletableFuture.failedFuture(new RuntimeException("의도적인 MQTT 비동기 발행 실패")));
 
         assertThatCode(() -> cultivationDataGenerationService
-                .generateAndPublishSensorData(1L, List.of(sensorCacheEntry)))
+                .generateAndPublishSensorData(
+                        1L,
+                        List.of(sensorCacheEntry),
+                        CYCLE_ID
+                ))
                 .doesNotThrowAnyException();
 
-        verify(sensorValueGenerationResolver).generateNextValue(1L, sensorChannelKey, 0.0);
+        verify(sharedEnvironmentSensorValueGenerator)
+                .generateNextValue(
+                        1L,
+                        sensorChannelKey,
+                        0.0,
+                        CYCLE_ID
+                );
         verify(mqttTopicGenerator).generateTopic(sensorCacheEntry, sensorTypeSpec);
         verify(mqttPayloadSerializer).serializePayload(20.0, sensorTypeSpec, sensorCacheEntry);
         verify(mqttPublishable).publishMessage(topic, payload);
-        verify(sensorValueGenerationResolver, never()).removeState(any());
+        verify(sharedGenerationStateLifecycle, never())
+                .removeDeletedChannelState(
+                        anyLong(),
+                        any()
+                );
     }
 
     @Test
@@ -277,16 +405,51 @@ class CultivationDataGenerationServiceTest {
         SensorCacheEntry sensorCacheEntry = createSensorCacheEntry("device-A", Set.of(sensorTypeSpec));
 
         assertThatThrownBy(() -> cultivationDataGenerationService
-                .generateAndPublishSensorData(0L, List.of(sensorCacheEntry)))
+                .generateAndPublishSensorData(
+                        0L,
+                        List.of(sensorCacheEntry),
+                        CYCLE_ID
+                ))
                 .isInstanceOf(SensorDataGenerationException.class);
 
-        assertThatThrownBy(() -> cultivationDataGenerationService.generateAndPublishSensorData(1L, null))
+        assertThatThrownBy(() -> cultivationDataGenerationService
+                .generateAndPublishSensorData(
+                        1L,
+                        null,
+                        CYCLE_ID
+                ))
                 .isInstanceOf(SensorDataGenerationException.class);
 
-        assertThatThrownBy(() -> cultivationDataGenerationService.generateAndPublishSensorData(1L, Collections.singletonList(null)))
+        assertThatThrownBy(() -> cultivationDataGenerationService
+                .generateAndPublishSensorData(
+                        1L,
+                        Collections.singletonList(null),
+                        CYCLE_ID
+                ))
                 .isInstanceOf(SensorDataGenerationException.class);
 
-        assertThatThrownBy(() -> cultivationDataGenerationService.generateAndPublishSensorData(2L, List.of(sensorCacheEntry)))
+        assertThatThrownBy(() -> cultivationDataGenerationService
+                .generateAndPublishSensorData(
+                        2L,
+                        List.of(sensorCacheEntry),
+                        CYCLE_ID
+                ))
+                .isInstanceOf(SensorDataGenerationException.class);
+
+        assertThatThrownBy(() -> cultivationDataGenerationService
+                .generateAndPublishSensorData(
+                        1L,
+                        List.of(sensorCacheEntry),
+                        0L
+                ))
+                .isInstanceOf(SensorDataGenerationException.class);
+
+        assertThatThrownBy(() -> cultivationDataGenerationService
+                .generateAndPublishSensorData(
+                        1L,
+                        List.of(sensorCacheEntry),
+                        -1L
+                ))
                 .isInstanceOf(SensorDataGenerationException.class);
 
         verifyNoInteractions(
@@ -295,7 +458,8 @@ class CultivationDataGenerationServiceTest {
                 mqttPayloadSerializer,
                 mqttPublishable,
                 virtualActuatorService,
-                sensorValueGenerationResolver
+                sharedEnvironmentSensorValueGenerator,
+                sharedGenerationStateLifecycle
         );
     }
 

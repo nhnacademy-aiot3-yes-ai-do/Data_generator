@@ -37,6 +37,11 @@ generator:
     maximum-change-ratio: ${GENERATOR_DYNAMIC_SENSOR_MAXIMUM_CHANGE_RATIO:0.02}
     decimal-places: ${GENERATOR_DYNAMIC_SENSOR_DECIMAL_PLACES:2}
 
+  sensor-observation:
+    maximum-bias-ratio: ${GENERATOR_SENSOR_OBSERVATION_MAXIMUM_BIAS_RATIO:0.02}
+    maximum-deviation-ratio: ${GENERATOR_SENSOR_OBSERVATION_MAXIMUM_DEVIATION_RATIO:0.01}
+    deviation-retention-ratio: ${GENERATOR_SENSOR_OBSERVATION_DEVIATION_RETENTION_RATIO:0.80}
+
 sensor:
   synchronization:
     max-attempts: ${SENSOR_SYNCHRONIZATION_MAX_ATTEMPTS:5}
