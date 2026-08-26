@@ -7,7 +7,6 @@ import site.yesaido.data_generator.cache.SensorCache;
 import site.yesaido.data_generator.domain.SensorCacheEntry;
 import site.yesaido.data_generator.domain.SensorChannelKey;
 import site.yesaido.data_generator.exception.SensorSynchronizationException;
-import site.yesaido.data_generator.generator.SensorValueGenerationResolver;
 import site.yesaido.data_generator.rabbitmq.event.SensorInfoDeleteEvent;
 import site.yesaido.data_generator.rabbitmq.event.SensorInfoUpsertEvent;
 
@@ -18,22 +17,21 @@ import site.yesaido.data_generator.rabbitmq.event.SensorInfoUpsertEvent;
 public class SensorInfoEventService {
 
     private final SensorCache sensorCache;
-    private final SensorValueGenerationResolver sensorValueGenerationResolver;
+    private final SharedGenerationStateLifecycle
+            sharedGenerationStateLifecycle;
 
     public void processUpsertEvent(SensorInfoUpsertEvent sensorInfoUpsertEvent) {
         if (sensorInfoUpsertEvent == null) {
-            throw new SensorSynchronizationException(
-                    "sensorInfoUpsertEvent는 null일 수 없습니다."
-            );
+            throw new SensorSynchronizationException("sensorInfoUpsertEvent는 null일 수 없습니다.");
         }
 
         SensorCacheEntry sensorCacheEntry = sensorInfoUpsertEvent.convertToSensorCacheEntry();
+
         sensorCache.upsert(sensorCacheEntry);
 
         log.info("센서 채널 Upsert 이벤트를 반영했습니다. cultivationId={}, deviceEui={}, sensorType={}, unit={}, occurredAt={}",
                 sensorInfoUpsertEvent.cultivationId(), sensorInfoUpsertEvent.deviceEui(), sensorInfoUpsertEvent.sensorType(),
-                sensorInfoUpsertEvent.unit(), sensorInfoUpsertEvent.occurredAt()
-        );
+                sensorInfoUpsertEvent.unit(), sensorInfoUpsertEvent.occurredAt());
     }
 
     public void processDeleteEvent(SensorInfoDeleteEvent sensorInfoDeleteEvent) {
@@ -45,26 +43,30 @@ public class SensorInfoEventService {
 
         SensorChannelKey sensorChannelKey = sensorInfoDeleteEvent.convertToSensorChannelKey();
 
+        /*
+         * lifecycle은 삭제 후의 최신 캐시를 기준으로 남은 별칭과
+         * 다른 EUI 참조를 검사하므로 이 순서를 바꾸면 안 됩니다.
+         */
         sensorCache.removeChannel(sensorChannelKey);
 
-        sensorValueGenerationResolver.removeState(sensorChannelKey);
+        sharedGenerationStateLifecycle.removeDeletedChannelState(
+                sensorInfoDeleteEvent.cultivationId(), sensorChannelKey);
 
         log.info("센서 채널 Delete 이벤트를 반영했습니다. cultivationId={}, deviceEui={}, sensorType={}, unit={}, occurredAt={}",
                 sensorInfoDeleteEvent.cultivationId(), sensorInfoDeleteEvent.deviceEui(), sensorInfoDeleteEvent.sensorType(),
-                sensorInfoDeleteEvent.unit(), sensorInfoDeleteEvent.occurredAt()
-        );
+                sensorInfoDeleteEvent.unit(), sensorInfoDeleteEvent.occurredAt());
     }
 
     private void validateCultivationOwnership(SensorInfoDeleteEvent sensorInfoDeleteEvent) {
         sensorCache.findByDeviceEui(sensorInfoDeleteEvent.deviceEui())
-                .filter(sensorCacheEntry -> sensorCacheEntry.cultivationId() != sensorInfoDeleteEvent.cultivationId())
-                .ifPresent(sensorCacheEntry -> {throw new SensorSynchronizationException(
-                                    "삭제 이벤트의 cultivationId가 현재 센서 소속과 다릅니다. deviceEui=%s, currentCultivationId=%d, eventCultivationId=%d"
-                                            .formatted(sensorInfoDeleteEvent.deviceEui(),
-                                                    sensorCacheEntry.cultivationId(),
-                                                    sensorInfoDeleteEvent.cultivationId()).strip()
-                            );
-                        }
-                );
+                .filter(sensorCacheEntry ->
+                        sensorCacheEntry.cultivationId() != sensorInfoDeleteEvent.cultivationId())
+                .ifPresent(sensorCacheEntry -> {
+                    throw new SensorSynchronizationException(
+                            "삭제 이벤트의 cultivationId가 현재 센서 소속과 다릅니다. deviceEui=%s, currentCultivationId=%d, eventCultivationId=%d"
+                                    .formatted(sensorInfoDeleteEvent.deviceEui(), sensorCacheEntry.cultivationId(), sensorInfoDeleteEvent.cultivationId())
+                                    .strip()
+                    );
+                });
     }
 }
