@@ -362,7 +362,7 @@ class CultivationTaskCoordinatorTest {
                 "model",
                 Set.of(new SensorTypeSpec(
                         "TEMPERATURE",
-                        "℃"
+                        "°C"
                 ))
         );
     }

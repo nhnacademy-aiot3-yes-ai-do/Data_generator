@@ -84,7 +84,7 @@ class SensorGenerationPlanResolverTest {
 
         when(sensorUnitConverter
                 .findCanonicalUnit("TEMPERATURE"))
-                .thenReturn(Optional.of("℃"));
+                .thenReturn(Optional.of("°C"));
 
         when(sensorUnitConverter.convertFromCanonical(
                 "TEMPERATURE",
@@ -100,7 +100,7 @@ class SensorGenerationPlanResolverTest {
                         new EnvironmentStateKey(
                                 1L,
                                 "TEMPERATURE",
-                                "℃"
+                                "°C"
                         ),
                         configuration
                 )
@@ -133,7 +133,7 @@ class SensorGenerationPlanResolverTest {
 
         when(sensorUnitConverter
                 .findCanonicalUnit("TEMPERATURE"))
-                .thenReturn(Optional.of("℃"));
+                .thenReturn(Optional.of("°C"));
 
         when(sensorUnitConverter.convertFromCanonical("TEMPERATURE", "K", 16.0)).thenReturn(Optional.empty());
 
@@ -148,7 +148,7 @@ class SensorGenerationPlanResolverTest {
                 new SensorChannelKey(
                         "device-A",
                         "TEMPERATURE",
-                        "℃"
+                        "°C"
                 );
 
         MeasurementConfiguration configuration =
@@ -269,7 +269,7 @@ class SensorGenerationPlanResolverTest {
                 new SensorChannelKey(
                         "device-A",
                         "TEMPERATURE",
-                        "℃"
+                        "°C"
                 );
 
         assertThatThrownBy(() ->

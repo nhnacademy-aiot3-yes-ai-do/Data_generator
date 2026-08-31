@@ -33,7 +33,7 @@ class EnvironmentRandomWalkGeneratorTest {
             new EnvironmentStateKey(
                     1L,
                     "TEMPERATURE",
-                    "℃"
+                    "°C"
             );
 
     private RandomGenerator randomGenerator;
@@ -186,7 +186,7 @@ class EnvironmentRandomWalkGeneratorTest {
                 new EnvironmentStateKey(
                         2L,
                         "TEMPERATURE",
-                        "℃"
+                        "°C"
                 );
 
         MeasurementConfiguration configuration =

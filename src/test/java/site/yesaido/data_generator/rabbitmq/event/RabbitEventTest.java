@@ -36,7 +36,7 @@ class RabbitEventTest {
                 " device name ",
                 " device-A ",
                 " TEMPERATURE ",
-                " ℃ ",
+                " °C ",
                 OCCURRED_AT
         );
 
@@ -46,14 +46,14 @@ class RabbitEventTest {
         assertThat(event.deviceName()).isEqualTo("device name");
         assertThat(event.deviceEui()).isEqualTo("device-A");
         assertThat(event.sensorType()).isEqualTo("TEMPERATURE");
-        assertThat(event.unit()).isEqualTo("℃");
+        assertThat(event.unit()).isEqualTo("°C");
 
         SensorCacheEntry converted = event.convertToSensorCacheEntry();
 
         assertThat(converted.cultivationId()).isEqualTo(1L);
         assertThat(converted.deviceEui()).isEqualTo("device-A");
         assertThat(converted.sensorTypes())
-                .containsExactly(new SensorTypeSpec("TEMPERATURE", "℃"));
+                .containsExactly(new SensorTypeSpec("TEMPERATURE", "°C"));
     }
 
     @ParameterizedTest
@@ -69,7 +69,7 @@ class RabbitEventTest {
                 "device name",
                 "device-A",
                 "TEMPERATURE",
-                "℃",
+                "°C",
                 OCCURRED_AT
         )).isInstanceOf(SensorSynchronizationException.class);
     }
@@ -87,7 +87,7 @@ class RabbitEventTest {
                 "device name",
                 "device-A",
                 "TEMPERATURE",
-                "℃",
+                "°C",
                 OCCURRED_AT
         )).isInstanceOf(SensorSynchronizationException.class);
     }
@@ -103,7 +103,7 @@ class RabbitEventTest {
                 "device name",
                 "device-A",
                 "TEMPERATURE",
-                "℃",
+                "°C",
                 null
         )).isInstanceOf(SensorSynchronizationException.class);
     }
@@ -115,15 +115,15 @@ class RabbitEventTest {
                 1L,
                 " device-A ",
                 " TEMPERATURE ",
-                " ℃ ",
+                " °C ",
                 OCCURRED_AT
         );
 
         assertThat(event.deviceEui()).isEqualTo("device-A");
         assertThat(event.sensorType()).isEqualTo("TEMPERATURE");
-        assertThat(event.unit()).isEqualTo("℃");
+        assertThat(event.unit()).isEqualTo("°C");
         assertThat(event.convertToSensorChannelKey())
-                .isEqualTo(new SensorChannelKey("device-A", "TEMPERATURE", "℃"));
+                .isEqualTo(new SensorChannelKey("device-A", "TEMPERATURE", "°C"));
     }
 
     @ParameterizedTest
@@ -135,7 +135,7 @@ class RabbitEventTest {
                 cultivationId,
                 "device-A",
                 "TEMPERATURE",
-                "℃",
+                "°C",
                 OCCURRED_AT
         )).isInstanceOf(SensorSynchronizationException.class);
     }
@@ -149,7 +149,7 @@ class RabbitEventTest {
                 1L,
                 deviceEui,
                 "TEMPERATURE",
-                "℃",
+                "°C",
                 OCCURRED_AT
         )).isInstanceOf(SensorSynchronizationException.class);
     }
@@ -161,7 +161,7 @@ class RabbitEventTest {
                 1L,
                 "device-A",
                 "TEMPERATURE",
-                "℃",
+                "°C",
                 null
         )).isInstanceOf(SensorSynchronizationException.class);
     }
@@ -171,15 +171,15 @@ class RabbitEventTest {
     void normalizeAndConvertSensorRange() {
         SensorRange range = new SensorRange(
                 " TEMPERATURE ",
-                " ℃ ",
+                " °C ",
                 new BigDecimal("20"),
                 new BigDecimal("20")
         );
 
         assertThat(range.sensorType()).isEqualTo("TEMPERATURE");
-        assertThat(range.unit()).isEqualTo("℃");
+        assertThat(range.unit()).isEqualTo("°C");
         assertThat(range.convertToSensorThresholdKey(1L))
-                .isEqualTo(new SensorThresholdKey(1L, "TEMPERATURE", "℃"));
+                .isEqualTo(new SensorThresholdKey(1L, "TEMPERATURE", "°C"));
         assertThat(range.convertToSensorThresholdRange())
                 .isEqualTo(new SensorThresholdRange(new BigDecimal("20"), new BigDecimal("20")));
     }
@@ -191,7 +191,7 @@ class RabbitEventTest {
     void rejectInvalidSensorRangeText(String sensorType) {
         assertThatThrownBy(() -> new SensorRange(
                 sensorType,
-                "℃",
+                "°C",
                 BigDecimal.ZERO,
                 BigDecimal.ONE
         )).isInstanceOf(SensorSynchronizationException.class);
@@ -200,13 +200,13 @@ class RabbitEventTest {
     @Test
     @DisplayName("SensorRange는 null 범위와 역전된 범위를 거부한다")
     void rejectInvalidSensorRangeBounds() {
-        assertThatThrownBy(() -> new SensorRange("TEMPERATURE", "℃", null, BigDecimal.ONE))
+        assertThatThrownBy(() -> new SensorRange("TEMPERATURE", "°C", null, BigDecimal.ONE))
                 .isInstanceOf(SensorSynchronizationException.class);
-        assertThatThrownBy(() -> new SensorRange("TEMPERATURE", "℃", BigDecimal.ZERO, null))
+        assertThatThrownBy(() -> new SensorRange("TEMPERATURE", "°C", BigDecimal.ZERO, null))
                 .isInstanceOf(SensorSynchronizationException.class);
         assertThatThrownBy(() -> new SensorRange(
                 "TEMPERATURE",
-                "℃",
+                "°C",
                 BigDecimal.TEN,
                 BigDecimal.ONE
         )).isInstanceOf(SensorSynchronizationException.class);
@@ -215,7 +215,7 @@ class RabbitEventTest {
     @Test
     @DisplayName("Threshold 이벤트는 입력 목록을 방어 복사하고 빈 목록도 허용한다")
     void defensivelyCopyThresholdRangesAndAllowEmptyList() {
-        SensorRange range = new SensorRange("TEMPERATURE", "℃", BigDecimal.ZERO, BigDecimal.TEN);
+        SensorRange range = new SensorRange("TEMPERATURE", "°C", BigDecimal.ZERO, BigDecimal.TEN);
         List<SensorRange> mutableRanges = new ArrayList<>(List.of(range));
         ThresholdInfoEvent event = new ThresholdInfoEvent(1L, mutableRanges, OCCURRED_AT);
 

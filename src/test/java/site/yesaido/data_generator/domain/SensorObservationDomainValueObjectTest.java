@@ -18,7 +18,7 @@ class SensorObservationDomainValueObjectTest {
     @Test
     @DisplayName("센서 관측 키의 EUI를 정규화한다")
     void normalizeObservationDeviceEui() {
-        EnvironmentStateKey environmentStateKey = new EnvironmentStateKey(1L, "TEMPERATURE", "℃");
+        EnvironmentStateKey environmentStateKey = new EnvironmentStateKey(1L, "TEMPERATURE", "°C");
 
         SensorObservationKey key = new SensorObservationKey(environmentStateKey, "  sensor-eui-001  ");
 
@@ -26,19 +26,19 @@ class SensorObservationDomainValueObjectTest {
         assertThat(key.deviceEui()).isEqualTo("sensor-eui-001");
 
         assertThat(key).isEqualTo(new SensorObservationKey(new EnvironmentStateKey(
-                1L, "TEMPERATURE", "℃"), "sensor-eui-001"));
+                1L, "TEMPERATURE", "°C"), "sensor-eui-001"));
     }
 
     @Test
     @DisplayName("환경 키나 EUI가 다르면 서로 다른 센서 관측 키이다")
     void distinguishObservationKeys() {
-        EnvironmentStateKey environmentStateKey = new EnvironmentStateKey(1L, "TEMPERATURE", "℃");
+        EnvironmentStateKey environmentStateKey = new EnvironmentStateKey(1L, "TEMPERATURE", "°C");
         SensorObservationKey base = new SensorObservationKey(environmentStateKey, "sensor-eui-001");
 
         assertThat(base)
                 .isNotEqualTo(new SensorObservationKey(environmentStateKey, "sensor-eui-002"))
                 .isNotEqualTo(new SensorObservationKey(new EnvironmentStateKey(
-                        2L, "TEMPERATURE", "℃"), "sensor-eui-001"));
+                        2L, "TEMPERATURE", "°C"), "sensor-eui-001"));
     }
 
     @Test
@@ -54,7 +54,7 @@ class SensorObservationDomainValueObjectTest {
     @ValueSource(strings = {"   ", "\t"})
     @DisplayName("센서 관측 키는 EUI가 필요하다")
     void rejectMissingDeviceEui(String deviceEui) {
-        EnvironmentStateKey environmentStateKey = new EnvironmentStateKey(1L, "TEMPERATURE", "℃");
+        EnvironmentStateKey environmentStateKey = new EnvironmentStateKey(1L, "TEMPERATURE", "°C");
 
         assertThatThrownBy(() -> new SensorObservationKey(environmentStateKey, deviceEui))
                 .isInstanceOf(SensorDataGenerationException.class)
