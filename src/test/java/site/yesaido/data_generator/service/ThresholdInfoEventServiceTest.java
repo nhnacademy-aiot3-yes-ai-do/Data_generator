@@ -68,7 +68,7 @@ class ThresholdInfoEventServiceTest {
                         List.of(
                                 range(
                                         "TEMPERATURE",
-                                        "°C",
+                                        "℃",
                                         "10",
                                         "30"
                                 ),
@@ -94,7 +94,7 @@ class ThresholdInfoEventServiceTest {
                         new SensorThresholdKey(
                                 1L,
                                 "TEMPERATURE",
-                                "°C"
+                                "℃"
                         )
                 )
         )
@@ -136,13 +136,13 @@ class ThresholdInfoEventServiceTest {
                         List.of(
                                 range(
                                         "TEMPERATURE",
-                                        "°C",
+                                        "℃",
                                         "10",
                                         "30"
                                 ),
                                 range(
                                         "TEMPERATURE",
-                                        "°C",
+                                        "℃",
                                         "11",
                                         "31"
                                 )
@@ -174,7 +174,7 @@ class ThresholdInfoEventServiceTest {
         SensorTypeSpec celsius =
                 new SensorTypeSpec(
                         "TEMPERATURE",
-                        "°C"
+                        "℃"
                 );
 
         SensorTypeSpec humidity =
@@ -208,7 +208,7 @@ class ThresholdInfoEventServiceTest {
                 new SensorThresholdKey(
                         1L,
                         "TEMPERATURE",
-                        "°C"
+                        "℃"
                 );
 
         SensorThresholdKey otherKey =

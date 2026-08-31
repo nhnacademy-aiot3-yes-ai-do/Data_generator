@@ -19,7 +19,7 @@ class MqttTopicGeneratorTest {
     @Test
     @DisplayName("한글과 공백을 유지한 6구간 MQTT 토픽을 생성한다")
     void generateSixSegmentTopicWithoutUnit() {
-        SensorTypeSpec sensorTypeSpec = new SensorTypeSpec("TEMPERATURE", "°C");
+        SensorTypeSpec sensorTypeSpec = new SensorTypeSpec("TEMPERATURE", "℃");
 
         SensorCacheEntry sensorCacheEntry = createSensorCacheEntry(
                         "device-A",
@@ -33,13 +33,13 @@ class MqttTopicGeneratorTest {
 
         assertThat(topic).isEqualTo("mushroom/송이버섯집/중앙 오른쪽/TEST123/device-A/TEMPERATURE");
         assertThat(topic.split("/")).hasSize(6);
-        assertThat(topic).doesNotContain("°C");
+        assertThat(topic).doesNotContain("℃");
     }
 
     @Test
     @DisplayName("같은 장치와 센서 타입은 unit이 달라도 같은 토픽을 사용한다")
     void generateSameTopicForDifferentUnits() {
-        SensorTypeSpec celsiusSpec = new SensorTypeSpec("TEMPERATURE", "°C");
+        SensorTypeSpec celsiusSpec = new SensorTypeSpec("TEMPERATURE", "℃");
         SensorTypeSpec fahrenheitSpec = new SensorTypeSpec("TEMPERATURE", "°F");
         SensorCacheEntry sensorCacheEntry = createSensorCacheEntry(
                         "device-A",
@@ -75,7 +75,7 @@ class MqttTopicGeneratorTest {
     @Test
     @DisplayName("장치에 등록되지 않은 타입과 단위 조합을 거절한다")
     void rejectUnregisteredSensorTypeAndUnitCombination() {
-        SensorTypeSpec registeredSensorTypeSpec = new SensorTypeSpec("TEMPERATURE", "°C");
+        SensorTypeSpec registeredSensorTypeSpec = new SensorTypeSpec("TEMPERATURE", "℃");
         SensorTypeSpec unregisteredSensorTypeSpec = new SensorTypeSpec("TEMPERATURE", "°F");
         SensorCacheEntry sensorCacheEntry = createSensorCacheEntry(
                         "device-A",
@@ -92,7 +92,7 @@ class MqttTopicGeneratorTest {
     @Test
     @DisplayName("MQTT 토픽 생성의 null 입력을 거절한다")
     void rejectNullInputs() {
-        SensorTypeSpec sensorTypeSpec = new SensorTypeSpec("TEMPERATURE", "°C");
+        SensorTypeSpec sensorTypeSpec = new SensorTypeSpec("TEMPERATURE", "℃");
         SensorCacheEntry sensorCacheEntry = createSensorCacheEntry(
                         "device-A",
                         "송이버섯집",
@@ -112,7 +112,7 @@ class MqttTopicGeneratorTest {
     @Test
     @DisplayName("토픽 구성요소에 포함된 MQTT 금지 문자를 거절한다")
     void rejectForbiddenCharactersInTopicComponents() {
-        SensorTypeSpec temperatureSpec = new SensorTypeSpec("TEMPERATURE", "°C");
+        SensorTypeSpec temperatureSpec = new SensorTypeSpec("TEMPERATURE", "℃");
         SensorCacheEntry invalidLocationEntry = createSensorCacheEntry(
                         "device-A",
                         "송이/버섯집",

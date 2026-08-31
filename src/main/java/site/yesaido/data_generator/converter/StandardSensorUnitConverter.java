@@ -5,7 +5,7 @@ import site.yesaido.data_generator.exception.SensorDataGenerationException;
 
 import java.util.Optional;
 
-// 내부 표준값과 °C, °F, %, ppm, lux 전송 단위를 변환하는 상태 없는 Spring Bean
+// 내부 표준값과 ℃, °F, %, ppm, lux 전송 단위를 변환하는 상태 없는 Spring Bean
 @Component
 public final class StandardSensorUnitConverter implements SensorUnitConverter {
 

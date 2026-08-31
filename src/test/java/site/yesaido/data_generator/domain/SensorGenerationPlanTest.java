@@ -12,7 +12,7 @@ class SensorGenerationPlanTest {
             new EnvironmentStateKey(
                     1L,
                     "TEMPERATURE",
-                    "°C"
+                    "℃"
             );
 
     private final MeasurementConfiguration measurementConfiguration =

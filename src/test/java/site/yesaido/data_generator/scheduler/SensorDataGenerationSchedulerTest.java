@@ -213,7 +213,7 @@ class SensorDataGenerationSchedulerTest {
                 "location",
                 "location-detail",
                 "model",
-                Set.of(new SensorTypeSpec("TEMPERATURE", "°C"))
+                Set.of(new SensorTypeSpec("TEMPERATURE", "℃"))
         );
     }
 }

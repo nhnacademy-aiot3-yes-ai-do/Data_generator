@@ -36,7 +36,7 @@ public class LocalSensorFixtureInitializer implements ApplicationRunner { // 로
 
     // 로컬 장치가 제공하는 타입·단위별 독립 측정 채널
     private static final Set<SensorTypeSpec> FIXTURE_SENSOR_TYPES = Set.of(
-            new SensorTypeSpec("TEMPERATURE", "°C"),
+            new SensorTypeSpec("TEMPERATURE", "℃"),
             new SensorTypeSpec("TEMPERATURE", "°F"),
             new SensorTypeSpec("HUMIDITY", "%"),
             new SensorTypeSpec("CO2", "ppm"),

@@ -73,7 +73,7 @@ class SharedGenerationStateLifecycleTest {
                 createSensorEntry(
                         CULTIVATION_ID,
                         DEVICE_A,
-                        new SensorTypeSpec("TEMPERATURE", "°C"),
+                        new SensorTypeSpec("TEMPERATURE", "℃"),
                         new SensorTypeSpec("TEMPERATURE", "°F")
                 )
         );
@@ -97,14 +97,14 @@ class SharedGenerationStateLifecycleTest {
                 new SensorChannelKey(
                         DEVICE_A,
                         "TEMPERATURE",
-                        "°C"
+                        "℃"
                 );
 
         sensorCache.upsert(
                 createSensorEntry(
                         CULTIVATION_ID,
                         DEVICE_A,
-                        new SensorTypeSpec("TEMPERATURE", "°C")
+                        new SensorTypeSpec("TEMPERATURE", "℃")
                 )
         );
 
@@ -127,7 +127,7 @@ class SharedGenerationStateLifecycleTest {
                 new EnvironmentStateKey(
                         CULTIVATION_ID,
                         "TEMPERATURE",
-                        "°C"
+                        "℃"
                 );
 
         verify(sensorObservationProjector).removeState(
@@ -168,7 +168,7 @@ class SharedGenerationStateLifecycleTest {
                 new EnvironmentStateKey(
                         CULTIVATION_ID,
                         "TEMPERATURE",
-                        "°C"
+                        "℃"
                 );
 
         SensorObservationKey observationKey =
@@ -337,7 +337,7 @@ class SharedGenerationStateLifecycleTest {
                 new SensorChannelKey(
                         DEVICE_A,
                         "TEMPERATURE",
-                        "°C"
+                        "℃"
                 );
 
         assertThatThrownBy(() ->

@@ -19,17 +19,17 @@ class EnvironmentDomainValueObjectTest {
     @Test
     @DisplayName("환경 상태 키의 문자열을 정규화한다")
     void normalizeEnvironmentStateKey() {
-        EnvironmentStateKey key = new EnvironmentStateKey(1L, "  TEMPERATURE  ", "  °C  ");
-        assertThat(key).isEqualTo(new EnvironmentStateKey(1L, "TEMPERATURE", "°C"));
+        EnvironmentStateKey key = new EnvironmentStateKey(1L, "  TEMPERATURE  ", "  ℃  ");
+        assertThat(key).isEqualTo(new EnvironmentStateKey(1L, "TEMPERATURE", "℃"));
     }
 
     @Test
     @DisplayName("환경 상태 키의 구성 요소가 다르면 서로 다른 키이다")
     void distinguishEnvironmentStateKeys() {
-        EnvironmentStateKey base = new EnvironmentStateKey(1L, "TEMPERATURE", "°C");
+        EnvironmentStateKey base = new EnvironmentStateKey(1L, "TEMPERATURE", "℃");
         assertThat(base)
-                .isNotEqualTo(new EnvironmentStateKey(2L, "TEMPERATURE", "°C"))
-                .isNotEqualTo(new EnvironmentStateKey(1L, "HUMIDITY", "°C"))
+                .isNotEqualTo(new EnvironmentStateKey(2L, "TEMPERATURE", "℃"))
+                .isNotEqualTo(new EnvironmentStateKey(1L, "HUMIDITY", "℃"))
                 .isNotEqualTo(new EnvironmentStateKey(1L, "TEMPERATURE", "%"));
     }
 
@@ -37,7 +37,7 @@ class EnvironmentDomainValueObjectTest {
     @ValueSource(longs = {0L, -1L, Long.MIN_VALUE})
     @DisplayName("환경 상태 키의 재배 ID는 양수여야 한다")
     void rejectNonPositiveCultivationId(long cultivationId) {
-        assertThatThrownBy(() -> new EnvironmentStateKey(cultivationId, "TEMPERATURE", "°C"))
+        assertThatThrownBy(() -> new EnvironmentStateKey(cultivationId, "TEMPERATURE", "℃"))
                 .isInstanceOf(SensorDataGenerationException.class)
                 .hasMessageContaining("cultivationId");
     }
@@ -47,7 +47,7 @@ class EnvironmentDomainValueObjectTest {
     @DisplayName("환경 상태 키의 센서 타입과 표준 단위는 필수이다")
     void rejectMissingEnvironmentKeyText(String fieldName, String invalidValue) {
         ThrowingCallable creation = switch (fieldName) {
-            case "sensorType" -> () -> new EnvironmentStateKey(1L, invalidValue, "°C");
+            case "sensorType" -> () -> new EnvironmentStateKey(1L, invalidValue, "℃");
             case "canonicalUnit" -> () -> new EnvironmentStateKey(1L, "TEMPERATURE", invalidValue);
             default -> throw new AssertionError("unexpected fieldName=" + fieldName);
         };
