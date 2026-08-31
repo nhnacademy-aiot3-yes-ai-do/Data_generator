@@ -670,7 +670,7 @@ class SensorObservationProjectorTest {
                 new EnvironmentStateKey(
                         cultivationId,
                         "TEMPERATURE",
-                        "°C"
+                        "℃"
                 ),
                 deviceEui
         );

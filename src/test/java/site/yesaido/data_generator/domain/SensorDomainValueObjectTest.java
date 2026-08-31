@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class SensorDomainValueObjectTest {
 
     private static final SensorTypeSpec TEMPERATURE =
-            new SensorTypeSpec("TEMPERATURE", "°C");
+            new SensorTypeSpec("TEMPERATURE", "℃");
 
     @Test
     @DisplayName("센서 캐시 항목의 문자열을 정규화하고 센서 타입을 불변 복사한다")
@@ -111,12 +111,12 @@ class SensorDomainValueObjectTest {
     @DisplayName("센서 채널 키와 타입 명세의 문자열을 정규화한다")
     void normalizeSensorChannelAndTypeSpec() {
         SensorChannelKey channelKey = new SensorChannelKey(
-                "  device-A  ", "  TEMPERATURE  ", "  °C  ");
+                "  device-A  ", "  TEMPERATURE  ", "  ℃  ");
         SensorTypeSpec sensorTypeSpec = new SensorTypeSpec(
-                "  TEMPERATURE  ", "  °C  ");
+                "  TEMPERATURE  ", "  ℃  ");
 
         assertThat(channelKey).isEqualTo(
-                new SensorChannelKey("device-A", "TEMPERATURE", "°C"));
+                new SensorChannelKey("device-A", "TEMPERATURE", "℃"));
         assertThat(sensorTypeSpec).isEqualTo(TEMPERATURE);
     }
 
@@ -126,12 +126,12 @@ class SensorDomainValueObjectTest {
     void rejectMissingSensorValueObjectText(String objectType, String invalidValue) {
         ThrowingCallable valueObjectCreation = switch (objectType) {
             case "channel-device" -> () -> new SensorChannelKey(
-                    invalidValue, "TEMPERATURE", "°C");
+                    invalidValue, "TEMPERATURE", "℃");
             case "channel-type" -> () -> new SensorChannelKey(
-                    "device-A", invalidValue, "°C");
+                    "device-A", invalidValue, "℃");
             case "channel-unit" -> () -> new SensorChannelKey(
                     "device-A", "TEMPERATURE", invalidValue);
-            case "spec-type" -> () -> new SensorTypeSpec(invalidValue, "°C");
+            case "spec-type" -> () -> new SensorTypeSpec(invalidValue, "℃");
             case "spec-unit" -> () -> new SensorTypeSpec("TEMPERATURE", invalidValue);
             default -> throw new AssertionError("unexpected objectType=" + objectType);
         };
@@ -153,10 +153,10 @@ class SensorDomainValueObjectTest {
     @DisplayName("센서 임계값 키의 문자열을 정규화한다")
     void normalizeSensorThresholdKey() {
         SensorThresholdKey thresholdKey = new SensorThresholdKey(
-                1L, "  TEMPERATURE  ", "  °C  ");
+                1L, "  TEMPERATURE  ", "  ℃  ");
 
         assertThat(thresholdKey).isEqualTo(
-                new SensorThresholdKey(1L, "TEMPERATURE", "°C"));
+                new SensorThresholdKey(1L, "TEMPERATURE", "℃"));
     }
 
     @ParameterizedTest
@@ -164,7 +164,7 @@ class SensorDomainValueObjectTest {
     @DisplayName("센서 임계값 키의 재배 ID는 양수여야 한다")
     void rejectNonPositiveThresholdCultivationId(long cultivationId) {
         assertThatThrownBy(() -> new SensorThresholdKey(
-                cultivationId, "TEMPERATURE", "°C"))
+                cultivationId, "TEMPERATURE", "℃"))
                 .isInstanceOf(SensorDataGenerationException.class)
                 .hasMessageContaining("cultivationId");
     }
@@ -174,7 +174,7 @@ class SensorDomainValueObjectTest {
     @DisplayName("센서 임계값 키의 타입과 단위는 필수이다")
     void rejectMissingThresholdKeyText(String fieldName, String invalidValue) {
         ThrowingCallable thresholdKeyCreation = fieldName.equals("sensorType")
-                ? () -> new SensorThresholdKey(1L, invalidValue, "°C")
+                ? () -> new SensorThresholdKey(1L, invalidValue, "℃")
                 : () -> new SensorThresholdKey(1L, "TEMPERATURE", invalidValue);
 
         assertThatThrownBy(thresholdKeyCreation)

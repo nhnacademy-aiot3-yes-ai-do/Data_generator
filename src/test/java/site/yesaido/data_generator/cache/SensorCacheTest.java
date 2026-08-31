@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class SensorCacheTest {
 
-    private static final SensorTypeSpec TEMPERATURE = new SensorTypeSpec("TEMPERATURE", "°C");
+    private static final SensorTypeSpec TEMPERATURE = new SensorTypeSpec("TEMPERATURE", "℃");
     private static final SensorTypeSpec TEMPERATURE_FAHRENHEIT = new SensorTypeSpec("TEMPERATURE", "°F");
     private static final SensorTypeSpec HUMIDITY = new SensorTypeSpec("HUMIDITY", "%");
     private static final SensorTypeSpec CO2 = new SensorTypeSpec("CO2", "ppm");
@@ -132,7 +132,7 @@ class SensorCacheTest {
                 .isInstanceOf(SensorCacheException.class)
                 .hasMessage("sensorChannelKey는 null일 수 없습니다.");
 
-        sensorCache.removeChannel(new SensorChannelKey("missing-device", "TEMPERATURE", "°C"));
+        sensorCache.removeChannel(new SensorChannelKey("missing-device", "TEMPERATURE", "℃"));
 
         assertThat(sensorCache.getSensorCount()).isZero();
     }
@@ -174,7 +174,7 @@ class SensorCacheTest {
         sensorCache.upsert(multipleChannelEntry);
         sensorCache.upsert(singleChannelEntry);
 
-        sensorCache.removeChannel(new SensorChannelKey("device-1", "TEMPERATURE", "°C"));
+        sensorCache.removeChannel(new SensorChannelKey("device-1", "TEMPERATURE", "℃"));
 
         assertThat(sensorCache.findByDeviceEui("device-1"))
                 .get()

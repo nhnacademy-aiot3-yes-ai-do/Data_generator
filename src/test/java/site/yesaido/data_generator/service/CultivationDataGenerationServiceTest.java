@@ -75,7 +75,7 @@ class CultivationDataGenerationServiceTest {
     @Test
     @DisplayName("등록된 각 센서 채널의 값을 생성하여 MQTT 발행을 요청한다")
     void generateAndPublishEveryRegisteredSensorChannel() {
-        SensorTypeSpec celsiusSpec = new SensorTypeSpec("TEMPERATURE", "°C");
+        SensorTypeSpec celsiusSpec = new SensorTypeSpec("TEMPERATURE", "℃");
         SensorTypeSpec fahrenheitSpec = new SensorTypeSpec("TEMPERATURE", "°F");
         SensorCacheEntry sensorCacheEntry = createSensorCacheEntry(
                 "device-A", Set.of(celsiusSpec, fahrenheitSpec));
@@ -83,7 +83,7 @@ class CultivationDataGenerationServiceTest {
         SensorChannelKey celsiusKey = new SensorChannelKey(
                         "device-A",
                         "TEMPERATURE",
-                        "°C"
+                        "℃"
                 );
 
         SensorChannelKey fahrenheitKey = new SensorChannelKey(
@@ -209,13 +209,13 @@ class CultivationDataGenerationServiceTest {
     @Test
     @DisplayName("실행 중 삭제된 정확한 센서 채널의 생성 상태만 제거한다")
     void removeOnlyDeletedSensorChannelState() {
-        SensorTypeSpec celsiusSpec = new SensorTypeSpec("TEMPERATURE", "°C");
+        SensorTypeSpec celsiusSpec = new SensorTypeSpec("TEMPERATURE", "℃");
         SensorTypeSpec fahrenheitSpec = new SensorTypeSpec("TEMPERATURE", "°F");
 
         SensorCacheEntry snapshotEntry = createSensorCacheEntry("device-A", Set.of(celsiusSpec, fahrenheitSpec));
         SensorCacheEntry currentEntry = createSensorCacheEntry("device-A", Set.of(celsiusSpec));
 
-        SensorChannelKey celsiusKey = new SensorChannelKey("device-A", "TEMPERATURE", "°C");
+        SensorChannelKey celsiusKey = new SensorChannelKey("device-A", "TEMPERATURE", "℃");
         SensorChannelKey fahrenheitKey = new SensorChannelKey("device-A", "TEMPERATURE", "°F");
 
         when(virtualActuatorService.getActiveActuatorTypesSnapshot(1L))
@@ -254,13 +254,13 @@ class CultivationDataGenerationServiceTest {
     @Test
     @DisplayName("한 장치의 센서값 생성 실패 후에도 다음 장치의 MQTT 발행을 계속한다")
     void continuePublishingNextDeviceAfterSensorValueGenerationFailure() {
-        SensorTypeSpec firstSensorTypeSpec = new SensorTypeSpec("TEMPERATURE", "°C");
+        SensorTypeSpec firstSensorTypeSpec = new SensorTypeSpec("TEMPERATURE", "℃");
         SensorTypeSpec secondSensorTypeSpec = new SensorTypeSpec("HUMIDITY", "%");
 
         SensorCacheEntry firstSensorCacheEntry = createSensorCacheEntry("device-A", Set.of(firstSensorTypeSpec));
         SensorCacheEntry secondSensorCacheEntry = createSensorCacheEntry("device-B", Set.of(secondSensorTypeSpec));
 
-        SensorChannelKey firstSensorChannelKey = new SensorChannelKey("device-A", "TEMPERATURE", "°C");
+        SensorChannelKey firstSensorChannelKey = new SensorChannelKey("device-A", "TEMPERATURE", "℃");
         SensorChannelKey secondSensorChannelKey = new SensorChannelKey("device-B", "HUMIDITY", "%");
 
         String firstTopic = "mushroom/송이버섯집/중앙 오른쪽/TEST123/device-A/TEMPERATURE";
@@ -347,9 +347,9 @@ class CultivationDataGenerationServiceTest {
     @Test
     @DisplayName("MQTT 비동기 발행 실패를 서비스 호출자에게 전파하지 않는다")
     void doNotPropagateAsynchronousMqttPublishFailure() {
-        SensorTypeSpec sensorTypeSpec = new SensorTypeSpec("TEMPERATURE", "°C");
+        SensorTypeSpec sensorTypeSpec = new SensorTypeSpec("TEMPERATURE", "℃");
         SensorCacheEntry sensorCacheEntry = createSensorCacheEntry("device-A", Set.of(sensorTypeSpec));
-        SensorChannelKey sensorChannelKey = new SensorChannelKey("device-A", "TEMPERATURE", "°C");
+        SensorChannelKey sensorChannelKey = new SensorChannelKey("device-A", "TEMPERATURE", "℃");
         String topic = "mushroom/송이버섯집/중앙 오른쪽/TEST123/device-A/TEMPERATURE";
 
         byte[] payload = {1};
@@ -400,7 +400,7 @@ class CultivationDataGenerationServiceTest {
     @Test
     @DisplayName("잘못된 생성 요청을 외부 의존성 호출 전에 거절한다")
     void rejectInvalidGenerationRequestsBeforeUsingDependencies() {
-        SensorTypeSpec sensorTypeSpec = new SensorTypeSpec("TEMPERATURE", "°C");
+        SensorTypeSpec sensorTypeSpec = new SensorTypeSpec("TEMPERATURE", "℃");
 
         SensorCacheEntry sensorCacheEntry = createSensorCacheEntry("device-A", Set.of(sensorTypeSpec));
 

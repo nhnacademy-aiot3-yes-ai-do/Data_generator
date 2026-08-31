@@ -85,9 +85,9 @@ class SensorThresholdCacheTest {
     @Test
     @DisplayName("정확한 임계값 키 하나만 멱등하게 삭제한다")
     void removeOnlyExactThresholdKeyIdempotently() {
-        SensorThresholdKey celsiusKey = createThresholdKey(1L, "TEMPERATURE", "°C");
+        SensorThresholdKey celsiusKey = createThresholdKey(1L, "TEMPERATURE", "℃");
         SensorThresholdKey fahrenheitKey = createThresholdKey(1L, "TEMPERATURE", "°F");
-        SensorThresholdKey anotherCultivationKey = createThresholdKey(2L, "TEMPERATURE", "°C");
+        SensorThresholdKey anotherCultivationKey = createThresholdKey(2L, "TEMPERATURE", "℃");
 
         SensorThresholdRange thresholdRange = createThresholdRange("10", "20");
 

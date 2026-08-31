@@ -31,7 +31,7 @@ class StandardSensorUnitConverterTest {
 
     private static Stream<Arguments> supportedConversions() {
         return Stream.of(
-                Arguments.of("TEMPERATURE", "°C", 20.0, 20.0),
+                Arguments.of("TEMPERATURE", "℃", 20.0, 20.0),
                 Arguments.of("TEMPERATURE", "°F", 20.0, 68.0),
                 Arguments.of("TEMPERATURE", "°F", 20.03, 68.1),
                 Arguments.of("HUMIDITY", "%", 75.5, 75.5),
@@ -50,6 +50,7 @@ class StandardSensorUnitConverterTest {
 
     private static Stream<Arguments> unsupportedConversions() {
         return Stream.of(
+                Arguments.of("TEMPERATURE", "\u00B0C"),
                 Arguments.of("TEMPERATURE", "K"),
                 Arguments.of("HUMIDITY", "%RH"),
                 Arguments.of("CO2", "ppb"),
@@ -75,7 +76,7 @@ class StandardSensorUnitConverterTest {
     @DisplayName("센서 타입이 null 또는 공백이면 예외가 발생한다")
     void rejectMissingSensorType(String sensorType) {
         assertThatThrownBy(() -> converter.convertFromCanonical(
-                sensorType, "°C", 10.0))
+                sensorType, "℃", 10.0))
                 .isInstanceOf(SensorDataGenerationException.class)
                 .hasMessageContaining("sensorType");
     }
@@ -96,7 +97,7 @@ class StandardSensorUnitConverterTest {
     @DisplayName("표준값이 null 또는 유한하지 않은 숫자이면 예외가 발생한다")
     void rejectInvalidCanonicalValue(Number canonicalValue) {
         assertThatThrownBy(() -> converter.convertFromCanonical(
-                "TEMPERATURE", "°C", canonicalValue))
+                "TEMPERATURE", "℃", canonicalValue))
                 .isInstanceOf(SensorDataGenerationException.class)
                 .hasMessageContaining("canonicalValue");
     }
@@ -111,7 +112,7 @@ class StandardSensorUnitConverterTest {
 
     private static Stream<Arguments> canonicalUnits() {
         return Stream.of(
-                Arguments.of("TEMPERATURE", "°C"),
+                Arguments.of("TEMPERATURE", "℃"),
                 Arguments.of("HUMIDITY", "%"),
                 Arguments.of("CO2", "ppm"),
                 Arguments.of("LIGHT", "lux")
@@ -129,7 +130,7 @@ class StandardSensorUnitConverterTest {
     @DisplayName("표준 단위를 찾을 때 센서 타입의 앞뒤 공백을 제거한다")
     void normalizeSensorTypeWhenFindingCanonicalUnit() {
         assertThat(converter.findCanonicalUnit("  TEMPERATURE  "))
-                .contains("°C");
+                .contains("℃");
     }
 
     @ParameterizedTest
@@ -154,7 +155,7 @@ class StandardSensorUnitConverterTest {
 
     private static Stream<Arguments> supportedToCanonicalConversions() {
         return Stream.of(
-                Arguments.of("TEMPERATURE", "°C", 20.0, 20.0),
+                Arguments.of("TEMPERATURE", "℃", 20.0, 20.0),
                 Arguments.of("TEMPERATURE", "°F", 32.0, 0.0),
                 Arguments.of("TEMPERATURE", "°F", 68.0, 20.0),
                 Arguments.of("TEMPERATURE", "°F", 68.18, 20.1),
@@ -176,7 +177,7 @@ class StandardSensorUnitConverterTest {
     @MethodSource("invalidCanonicalValues")
     @DisplayName("입력값이 null 또는 유한하지 않으면 표준 단위 변환을 거절한다")
     void rejectInvalidSourceValue(Number sourceValue) {
-        assertThatThrownBy(() -> converter.convertToCanonical("TEMPERATURE", "°C", sourceValue))
+        assertThatThrownBy(() -> converter.convertToCanonical("TEMPERATURE", "℃", sourceValue))
                 .isInstanceOf(SensorDataGenerationException.class)
                 .hasMessageContaining("sourceValue");
     }
