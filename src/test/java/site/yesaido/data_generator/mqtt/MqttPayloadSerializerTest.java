@@ -28,7 +28,7 @@ class MqttPayloadSerializerTest {
     @Test
     @DisplayName("정상 센서값을 확정된 5개 필드의 MQTT JSON으로 직렬화한다")
     void serializeSensorPayloadWithExactContract() throws Exception {
-        SensorTypeSpec sensorTypeSpec = new SensorTypeSpec("TEMPERATURE", "℃");
+        SensorTypeSpec sensorTypeSpec = new SensorTypeSpec("TEMPERATURE", "°C");
         SensorCacheEntry sensorCacheEntry = createSensorCacheEntry(Set.of(sensorTypeSpec));
 
         byte[] serializedPayload = mqttPayloadSerializer.serializePayload(
@@ -43,7 +43,7 @@ class MqttPayloadSerializerTest {
 
         assertThat(payload.get("value").isNumber()).isTrue();
         assertThat(payload.get("value").doubleValue()).isEqualTo(23.5);
-        assertThat(payload.get("unit").asString()).isEqualTo("℃");
+        assertThat(payload.get("unit").asString()).isEqualTo("°C");
         assertThat(payload.get("time").asString()).isEqualTo("2026-08-08T19:15:30.123+09:00");
         assertThat(payload.get("device_name").asString()).isEqualTo("TEST123-DEVICE");
         assertThat(payload.get("device_eui").asString()).isEqualTo("device-A");
@@ -55,7 +55,7 @@ class MqttPayloadSerializerTest {
     @Test
     @DisplayName("같은 타입의 서로 다른 unit을 payload에 각각 보존한다")
     void preserveDifferentUnitsInPayload() throws Exception {
-        SensorTypeSpec celsiusSpec = new SensorTypeSpec("TEMPERATURE", "℃");
+        SensorTypeSpec celsiusSpec = new SensorTypeSpec("TEMPERATURE", "°C");
         SensorTypeSpec fahrenheitSpec = new SensorTypeSpec("TEMPERATURE", "°F");
         SensorCacheEntry sensorCacheEntry = createSensorCacheEntry(Set.of(celsiusSpec, fahrenheitSpec));
 
@@ -75,7 +75,7 @@ class MqttPayloadSerializerTest {
                 )
         );
 
-        assertThat(celsiusPayload.get("unit").asString()).isEqualTo("℃");
+        assertThat(celsiusPayload.get("unit").asString()).isEqualTo("°C");
         assertThat(fahrenheitPayload.get("unit").asString()).isEqualTo("°F");
     }
 
@@ -99,7 +99,7 @@ class MqttPayloadSerializerTest {
     @Test
     @DisplayName("장치에 등록되지 않은 타입과 단위 조합을 거절한다")
     void rejectUnregisteredSensorChannel() {
-        SensorTypeSpec registeredSpec = new SensorTypeSpec("TEMPERATURE", "℃");
+        SensorTypeSpec registeredSpec = new SensorTypeSpec("TEMPERATURE", "°C");
         SensorTypeSpec unregisteredSpec = new SensorTypeSpec("TEMPERATURE", "°F");
         SensorCacheEntry sensorCacheEntry = createSensorCacheEntry(Set.of(registeredSpec));
 
@@ -111,7 +111,7 @@ class MqttPayloadSerializerTest {
     @Test
     @DisplayName("null 또는 유한하지 않은 센서값을 거절한다")
     void rejectInvalidPayloadValues() {
-        SensorTypeSpec sensorTypeSpec = new SensorTypeSpec("TEMPERATURE", "℃");
+        SensorTypeSpec sensorTypeSpec = new SensorTypeSpec("TEMPERATURE", "°C");
         SensorCacheEntry sensorCacheEntry = createSensorCacheEntry(Set.of(sensorTypeSpec));
 
         assertThatThrownBy(() -> mqttPayloadSerializer

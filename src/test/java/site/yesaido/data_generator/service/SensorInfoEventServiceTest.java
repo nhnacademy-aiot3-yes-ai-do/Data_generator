@@ -55,7 +55,7 @@ class SensorInfoEventServiceTest {
                         1L,
                         "device-A",
                         "TEMPERATURE",
-                        "℃"
+                        "°C"
                 );
 
         service.processUpsertEvent(event);
@@ -72,7 +72,7 @@ class SensorInfoEventServiceTest {
                             .containsExactly(
                                     new SensorTypeSpec(
                                             "TEMPERATURE",
-                                            "℃"
+                                            "°C"
                                     )
                             );
                 });
@@ -104,7 +104,7 @@ class SensorInfoEventServiceTest {
         SensorTypeSpec celsius =
                 new SensorTypeSpec(
                         "TEMPERATURE",
-                        "℃"
+                        "°C"
                 );
 
         SensorTypeSpec fahrenheit =
@@ -126,14 +126,14 @@ class SensorInfoEventServiceTest {
                         1L,
                         "device-A",
                         "TEMPERATURE",
-                        "℃"
+                        "°C"
                 );
 
         SensorChannelKey deletedChannelKey =
                 new SensorChannelKey(
                         "device-A",
                         "TEMPERATURE",
-                        "℃"
+                        "°C"
                 );
 
         service.processDeleteEvent(event);
@@ -168,14 +168,14 @@ class SensorInfoEventServiceTest {
                         1L,
                         "device-A",
                         "TEMPERATURE",
-                        "℃"
+                        "°C"
                 );
 
         SensorChannelKey deletedChannelKey =
                 new SensorChannelKey(
                         "device-A",
                         "TEMPERATURE",
-                        "℃"
+                        "°C"
                 );
 
         service.processDeleteEvent(event);
@@ -208,7 +208,7 @@ class SensorInfoEventServiceTest {
                         Set.of(
                                 new SensorTypeSpec(
                                         "TEMPERATURE",
-                                        "℃"
+                                        "°C"
                                 )
                         )
                 )
@@ -219,14 +219,14 @@ class SensorInfoEventServiceTest {
                         2L,
                         "device-A",
                         "TEMPERATURE",
-                        "℃"
+                        "°C"
                 );
 
         SensorChannelKey channelKey =
                 new SensorChannelKey(
                         "device-A",
                         "TEMPERATURE",
-                        "℃"
+                        "°C"
                 );
 
         assertThatThrownBy(() ->

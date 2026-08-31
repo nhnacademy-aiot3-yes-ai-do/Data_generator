@@ -80,7 +80,7 @@ class SharedEnvironmentSensorValueGeneratorTest {
                 createPlan(
                         CULTIVATION_ID,
                         "TEMPERATURE",
-                        "℃"
+                        "°C"
                 );
 
         stubGenerationPipeline(
@@ -186,14 +186,14 @@ class SharedEnvironmentSensorValueGeneratorTest {
                 new SensorChannelKey(
                         "device-A",
                         "TEMPERATURE",
-                        "℃"
+                        "°C"
                 );
 
         SensorGenerationPlan plan =
                 createPlan(
                         CULTIVATION_ID,
                         "TEMPERATURE",
-                        "℃"
+                        "°C"
                 );
 
         stubGenerationPipeline(
@@ -204,13 +204,13 @@ class SharedEnvironmentSensorValueGeneratorTest {
 
         when(sensorUnitConverter.convertFromCanonical(
                 "TEMPERATURE",
-                "℃",
+                "°C",
                 OBSERVED_CANONICAL_VALUE
         )).thenReturn(Optional.empty());
 
         when(sensorUnitConverter
                 .findCanonicalUnit("TEMPERATURE"))
-                .thenReturn(Optional.of("℃"));
+                .thenReturn(Optional.of("°C"));
 
         assertThatThrownBy(() ->
                 generator.generateNextValue(
@@ -300,14 +300,14 @@ class SharedEnvironmentSensorValueGeneratorTest {
                 new SensorChannelKey(
                         "device-A",
                         "TEMPERATURE",
-                        "℃"
+                        "°C"
                 );
 
         SensorGenerationPlan mismatchedPlan =
                 createPlan(
                         2L,
                         "TEMPERATURE",
-                        "℃"
+                        "°C"
                 );
 
         when(sensorGenerationPlanResolver.resolve(
@@ -338,7 +338,7 @@ class SharedEnvironmentSensorValueGeneratorTest {
                 new SensorChannelKey(
                         "device-A",
                         "TEMPERATURE",
-                        "℃"
+                        "°C"
                 );
 
         SensorGenerationPlan mismatchedPlan =
@@ -549,7 +549,7 @@ class SharedEnvironmentSensorValueGeneratorTest {
         return new SensorChannelKey(
                 "device-A",
                 "TEMPERATURE",
-                "℃"
+                "°C"
         );
     }
 

@@ -70,7 +70,7 @@ Cultivation Server snapshot 조회
 예:
 
 ```text
-(device-A, TEMPERATURE, ℃)
+(device-A, TEMPERATURE, °C)
 (device-A, TEMPERATURE, °F)
 ```
 
@@ -88,7 +88,7 @@ Cultivation Server snapshot 조회
 
 | sensorType | 지원 단위 | 내부 표준 단위 |
 |---|---|---|
-| `TEMPERATURE` | `℃`, `°F` | 섭씨 |
+| `TEMPERATURE` | `°C`, `°F` | 섭씨 |
 | `HUMIDITY` | `%` | 상대습도 |
 | `CO2` | `ppm` | ppm |
 | `LIGHT` | `lux` | lux |
@@ -113,7 +113,7 @@ mushroom/송이버섯집/중앙 오른쪽/TEST123/43a123123c777999/TEMPERATURE
 
 `unit`은 MQTT 토픽에 포함하지 않고 payload에 포함합니다.
 
-같은 장치의 `TEMPERATURE/℃`와 `TEMPERATURE/°F`는 같은 토픽으로 발행되며, payload의 `unit`으로 구분합니다.
+같은 장치의 `TEMPERATURE/°C`와 `TEMPERATURE/°F`는 같은 토픽으로 발행되며, payload의 `unit`으로 구분합니다.
 
 모든 하위 토픽을 확인할 때 사용할 구독 와일드카드:
 
@@ -128,7 +128,7 @@ mushroom/#
 ```json
 {
   "value": 20.4,
-  "unit": "℃",
+  "unit": "°C",
   "time": "2026-08-14T15:00:00+09:00",
   "device_name": "TEST123-DEVICE",
   "device_eui": "43a123123c777999"
@@ -355,7 +355,7 @@ fixture 정보:
 
 fixture 채널:
 
-- `TEMPERATURE/℃`
+- `TEMPERATURE/°C`
 - `TEMPERATURE/°F`
 - `HUMIDITY/%`
 - `CO2/ppm`

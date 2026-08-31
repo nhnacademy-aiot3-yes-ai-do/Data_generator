@@ -87,7 +87,7 @@ public final class SharedGenerationStateLifecycle {
                 );
 
         /*
-         * 예: 같은 EUI에 TEMPERATURE ℃와 °F가 함께 있고
+         * 예: 같은 EUI에 TEMPERATURE °C와 °F가 함께 있고
          * °F만 삭제된 경우입니다. 두 채널은 같은 공용 환경과
          * 같은 EUI 관측 상태를 공유하므로 아무 상태도 삭제하지 않습니다.
          */

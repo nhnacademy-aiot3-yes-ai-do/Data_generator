@@ -77,7 +77,7 @@ class CultivationSensorSynchronizationServiceTest {
                 1L,
                 "device-A",
                 List.of(
-                        new CultivationSensorTypeResponse("TEMPERATURE", "℃"),
+                        new CultivationSensorTypeResponse("TEMPERATURE", "°C"),
                         new CultivationSensorTypeResponse("HUMIDITY", "%")
                 )
         );
@@ -86,7 +86,7 @@ class CultivationSensorSynchronizationServiceTest {
                 "device-B",
                 List.of(new CultivationSensorTypeResponse("CO2", "ppm"))
         );
-        DataGeneratorThresholdResponse threshold = threshold(1L, "TEMPERATURE", "℃", "10", "30");
+        DataGeneratorThresholdResponse threshold = threshold(1L, "TEMPERATURE", "°C", "10", "30");
 
         when(cultivationSensorReadable.getSnapshot()).thenReturn(
                 new DataGeneratorSnapshotResponse(
@@ -106,7 +106,7 @@ class CultivationSensorSynchronizationServiceTest {
         assertThat(sensorCache.findByDeviceEui("stale-device")).isEmpty();
         assertThat(sensorThresholdCache.isInitialSynchronizationCompleted()).isTrue();
         assertThat(sensorThresholdCache.find(staleThresholdKey)).isEmpty();
-        assertThat(sensorThresholdCache.find(new SensorThresholdKey(1L, "TEMPERATURE", "℃")))
+        assertThat(sensorThresholdCache.find(new SensorThresholdKey(1L, "TEMPERATURE", "°C")))
                 .get()
                 .satisfies(range -> {
                     assertThat(range.thresholdMin()).isEqualByComparingTo("10");
@@ -139,10 +139,10 @@ class CultivationSensorSynchronizationServiceTest {
                 "existing-location",
                 "existing-detail",
                 "existing-model",
-                Set.of(new SensorTypeSpec("TEMPERATURE", "℃"))
+                Set.of(new SensorTypeSpec("TEMPERATURE", "°C"))
         );
         SensorThresholdKey existingThresholdKey =
-                new SensorThresholdKey(1L, "TEMPERATURE", "℃");
+                new SensorThresholdKey(1L, "TEMPERATURE", "°C");
         SensorThresholdRange existingThresholdRange =
                 new SensorThresholdRange(new BigDecimal("10"), new BigDecimal("30"));
         sensorCache.replaceAll(List.of(existingSensor));
@@ -247,7 +247,7 @@ class CultivationSensorSynchronizationServiceTest {
                 .isInstanceOf(SensorSynchronizationException.class)
                 .hasMessageContaining("sensorTypes에 null");
 
-        CultivationSensorTypeResponse duplicated = new CultivationSensorTypeResponse("TEMPERATURE", "℃");
+        CultivationSensorTypeResponse duplicated = new CultivationSensorTypeResponse("TEMPERATURE", "°C");
         when(cultivationSensorReadable.getSnapshot()).thenReturn(
                 snapshotWithSensors(List.of(sensor(1L, "device-A", List.of(duplicated, duplicated))))
         );
@@ -260,7 +260,7 @@ class CultivationSensorSynchronizationServiceTest {
     @Test
     @DisplayName("snapshot에 같은 deviceEui가 두 번 있으면 거부한다")
     void rejectDuplicateDeviceEui() {
-        CultivationSensorTypeResponse type = new CultivationSensorTypeResponse("TEMPERATURE", "℃");
+        CultivationSensorTypeResponse type = new CultivationSensorTypeResponse("TEMPERATURE", "°C");
         when(cultivationSensorReadable.getSnapshot()).thenReturn(
                 snapshotWithSensors(List.of(
                         sensor(1L, "device-A", List.of(type)),
@@ -300,8 +300,8 @@ class CultivationSensorSynchronizationServiceTest {
     @Test
     @DisplayName("snapshot의 중복 임계값 키를 거부한다")
     void rejectDuplicateThresholdKey() {
-        DataGeneratorThresholdResponse first = threshold(1L, "TEMPERATURE", "℃", "10", "30");
-        DataGeneratorThresholdResponse second = threshold(1L, "TEMPERATURE", "℃", "11", "31");
+        DataGeneratorThresholdResponse first = threshold(1L, "TEMPERATURE", "°C", "10", "30");
+        DataGeneratorThresholdResponse second = threshold(1L, "TEMPERATURE", "°C", "11", "31");
         when(cultivationSensorReadable.getSnapshot()).thenReturn(
                 new DataGeneratorSnapshotResponse(SNAPSHOT_AT, List.of(), List.of(first, second))
         );
