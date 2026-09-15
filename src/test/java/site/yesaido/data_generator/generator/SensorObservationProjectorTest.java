@@ -5,12 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import site.yesaido.data_generator.domain.EnvironmentState;
-import site.yesaido.data_generator.domain.EnvironmentStateKey;
-import site.yesaido.data_generator.domain.MeasurementConfiguration;
-import site.yesaido.data_generator.domain.SensorObservationKey;
-import site.yesaido.data_generator.domain.SensorObservationPolicy;
-import site.yesaido.data_generator.domain.SensorObservationState;
+import site.yesaido.data_generator.domain.*;
 import site.yesaido.data_generator.exception.SensorDataGenerationException;
 
 import java.math.BigDecimal;
@@ -24,11 +19,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.within;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class SensorObservationProjectorTest {
 

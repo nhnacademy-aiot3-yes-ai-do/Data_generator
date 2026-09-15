@@ -3,17 +3,6 @@ package site.yesaido.data_generator.rabbitmq;
 // RabbitMQ 토폴로지, 이벤트 TypeId, Listener 식별자를 관리합니다.
 public final class RabbitMqConstants {
 
-    // 처리 재시도가 모두 실패한 메시지를 전달하는 Dead Letter Exchange입니다.
-    public static final String DEAD_LETTER_EXCHANGE =
-            "yes-nhn.dlx";
-
-    // 최대 재시도 후에도 처리하지 못한 메시지를 보관하는 공용 실패 큐입니다.
-    public static final String DEAD_LETTER_QUEUE =
-            "yes-nhn.dlq";
-
-    public static final String DEAD_LETTER_EXCHANGE_ARGUMENT =
-            "x-dead-letter-exchange";
-
     // Cultivation Server의 센서와 임계값 이벤트가 발행되는 Topic Exchange입니다.
     public static final String SENSOR_EXCHANGE =
             "yes-nhn.sensor.exchange";

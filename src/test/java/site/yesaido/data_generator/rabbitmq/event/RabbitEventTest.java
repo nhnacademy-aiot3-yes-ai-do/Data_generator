@@ -5,11 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import site.yesaido.data_generator.domain.SensorCacheEntry;
-import site.yesaido.data_generator.domain.SensorChannelKey;
-import site.yesaido.data_generator.domain.SensorThresholdKey;
-import site.yesaido.data_generator.domain.SensorThresholdRange;
-import site.yesaido.data_generator.domain.SensorTypeSpec;
+import site.yesaido.data_generator.domain.*;
 import site.yesaido.data_generator.exception.SensorSynchronizationException;
 
 import java.math.BigDecimal;

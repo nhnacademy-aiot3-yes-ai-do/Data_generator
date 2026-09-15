@@ -1,12 +1,12 @@
 package site.yesaido.data_generator.domain;
 
+import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import site.yesaido.data_generator.exception.SensorCacheException;
 import site.yesaido.data_generator.exception.SensorDataGenerationException;
 

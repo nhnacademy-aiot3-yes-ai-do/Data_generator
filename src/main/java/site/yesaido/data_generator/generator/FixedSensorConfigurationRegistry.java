@@ -1,10 +1,11 @@
 package site.yesaido.data_generator.generator;
 
-import java.util.Map;
-import java.util.Optional;
 import org.springframework.stereotype.Component;
 import site.yesaido.data_generator.domain.MeasurementConfiguration;
 import site.yesaido.data_generator.exception.SensorDataGenerationException;
+
+import java.util.Map;
+import java.util.Optional;
 
 @Component
 public final class FixedSensorConfigurationRegistry {

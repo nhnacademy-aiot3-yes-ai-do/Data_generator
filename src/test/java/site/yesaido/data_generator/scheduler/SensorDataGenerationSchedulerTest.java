@@ -1,7 +1,5 @@
 package site.yesaido.data_generator.scheduler;
 
-import java.util.List;
-import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,13 +13,12 @@ import site.yesaido.data_generator.domain.SensorTypeSpec;
 import site.yesaido.data_generator.generator.GenerationCycleSequence;
 import site.yesaido.data_generator.service.CultivationTaskCoordinator;
 
+import java.util.List;
+import java.util.Set;
+
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class SensorDataGenerationSchedulerTest {

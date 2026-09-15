@@ -1,15 +1,5 @@
 package site.yesaido.data_generator.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-
-import java.time.OffsetDateTime;
-import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,6 +14,13 @@ import site.yesaido.data_generator.domain.SensorTypeSpec;
 import site.yesaido.data_generator.exception.SensorSynchronizationException;
 import site.yesaido.data_generator.rabbitmq.event.SensorInfoDeleteEvent;
 import site.yesaido.data_generator.rabbitmq.event.SensorInfoUpsertEvent;
+
+import java.time.OffsetDateTime;
+import java.util.Set;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class SensorInfoEventServiceTest {

@@ -1,20 +1,16 @@
 package site.yesaido.data_generator.service;
 
-import java.util.List;
-import java.util.Optional;
 import org.springframework.stereotype.Service;
 import site.yesaido.data_generator.cache.SensorCache;
 import site.yesaido.data_generator.converter.SensorUnitConverter;
-import site.yesaido.data_generator.domain.EnvironmentStateKey;
-import site.yesaido.data_generator.domain.MeasurementConfiguration;
-import site.yesaido.data_generator.domain.SensorCacheEntry;
-import site.yesaido.data_generator.domain.SensorChannelKey;
-import site.yesaido.data_generator.domain.SensorObservationKey;
-import site.yesaido.data_generator.domain.SensorTypeSpec;
+import site.yesaido.data_generator.domain.*;
 import site.yesaido.data_generator.exception.SensorDataGenerationException;
 import site.yesaido.data_generator.generator.EnvironmentRandomWalkGenerator;
 import site.yesaido.data_generator.generator.FixedSensorConfigurationRegistry;
 import site.yesaido.data_generator.generator.SensorObservationProjector;
+
+import java.util.List;
+import java.util.Optional;
 
 // 삭제된 센서 채널에 더 이상 필요하지 않은 공용 환경·EUI 관측 상태를 정리합니다.
 @Service

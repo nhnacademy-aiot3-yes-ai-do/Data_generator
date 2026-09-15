@@ -1,9 +1,10 @@
 package site.yesaido.data_generator.generator;
 
-import java.util.concurrent.atomic.AtomicLong;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import site.yesaido.data_generator.exception.SensorDataGenerationException;
+
+import java.util.concurrent.atomic.AtomicLong;
 
 /*
  * 초기 동기화 완료 후 센서 snapshot이 비어 있지 않은 scheduler tick마다
