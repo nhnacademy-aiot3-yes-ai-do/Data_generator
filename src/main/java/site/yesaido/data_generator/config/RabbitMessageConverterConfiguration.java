@@ -12,9 +12,7 @@ import site.yesaido.data_generator.rabbitmq.event.ThresholdInfoEvent;
 import java.util.HashMap;
 import java.util.Map;
 
-import static site.yesaido.data_generator.rabbitmq.RabbitMqConstants.SENSOR_DELETE_TYPE_ID;
-import static site.yesaido.data_generator.rabbitmq.RabbitMqConstants.SENSOR_UPSERT_TYPE_ID;
-import static site.yesaido.data_generator.rabbitmq.RabbitMqConstants.THRESHOLD_CRUD_TYPE_ID;
+import static site.yesaido.data_generator.rabbitmq.RabbitMqConstants.*;
 
 // RabbitMQ의 JSON 메시지와 로컬 이벤트 record 사이의 변환 규칙을 설정합니다.
 @Configuration(proxyBeanMethods = false)

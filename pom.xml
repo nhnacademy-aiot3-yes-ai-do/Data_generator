@@ -35,6 +35,13 @@
         <jacoco.minimum.line.coverage>0.80</jacoco.minimum.line.coverage>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
+
     <dependencies>
 
         <dependency>
@@ -95,6 +102,12 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.nhnacademy-aiot3-yes-ai-do</groupId>
+            <artifactId>yesaido-common</artifactId>
+            <version>v1.3.1</version>
         </dependency>
 
         <!-- JUnit, Mockito, AssertJ, Spring Test -->

@@ -1,11 +1,5 @@
 package site.yesaido.data_generator.service;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-
-import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,15 +9,16 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import site.yesaido.data_generator.cache.SensorCache;
 import site.yesaido.data_generator.converter.SensorUnitConverter;
 import site.yesaido.data_generator.converter.StandardSensorUnitConverter;
-import site.yesaido.data_generator.domain.EnvironmentStateKey;
-import site.yesaido.data_generator.domain.SensorCacheEntry;
-import site.yesaido.data_generator.domain.SensorChannelKey;
-import site.yesaido.data_generator.domain.SensorObservationKey;
-import site.yesaido.data_generator.domain.SensorTypeSpec;
+import site.yesaido.data_generator.domain.*;
 import site.yesaido.data_generator.exception.SensorDataGenerationException;
 import site.yesaido.data_generator.generator.EnvironmentRandomWalkGenerator;
 import site.yesaido.data_generator.generator.FixedSensorConfigurationRegistry;
 import site.yesaido.data_generator.generator.SensorObservationProjector;
+
+import java.util.Set;
+
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class SharedGenerationStateLifecycleTest {

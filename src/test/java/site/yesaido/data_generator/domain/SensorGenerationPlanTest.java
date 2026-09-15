@@ -1,10 +1,10 @@
 package site.yesaido.data_generator.domain;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import org.junit.jupiter.api.Test;
 import site.yesaido.data_generator.exception.SensorDataGenerationException;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class SensorGenerationPlanTest {
 

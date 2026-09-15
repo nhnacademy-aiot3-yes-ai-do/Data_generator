@@ -13,7 +13,6 @@ import site.yesaido.data_generator.exception.InvalidMqttPayloadException;
 import site.yesaido.data_generator.exception.InvalidMqttTopicException;
 import site.yesaido.data_generator.exception.MqttOperationException;
 
-
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
